@@ -17,7 +17,9 @@ import sys
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 APPS_DIR = BASE_DIR / 'apps'
+UTILS_DIR = BASE_DIR / 'utils'
 sys.path.append(str(APPS_DIR))
+sys.path.append(str(UTILS_DIR))
 
 
 # Quick-start development settings - unsuitable for production
