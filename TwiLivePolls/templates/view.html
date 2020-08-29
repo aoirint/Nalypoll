@@ -1,31 +1,111 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<h2>{{ tweet_id }}</h2>
+<div class="pt-4"></div>
 
-<p>
-  {{ tweet.id }}
+<div id="embed_tweet_container" class="d-flex justify-content-center"></div>
 
-<p>
-  {{ tweet.text }}
+<hr>
 
-<p>
-  Posted at {{ tweet.remote_created_at }}
+<div id="data_polls"
+  data-tweet="{{ tweet.json }}"
+  data-polls="{{ tweet.polls_json }}"
+></div>
 
-{% for poll in tweet.last_polls %}
-<h3>Poll {{ poll.remote_id }}</h3>
-<ul>
-  <li>Checked at: {{ poll.checked_at }}
-  <li>End: {{ poll.end_datetime }}
-  <li>Duration: {{ poll.duration_minutes }} minutes
-</ul>
+<div id="chart_polls"></div>
 
-<ul>
-{% for option in poll.options %}
-  <li>{{ option.label }}: {{ option.votes }} ({{ option.percentage |floatformat:-2 }} %)
-{% endfor %}
-</ul>
+<script>
+(function() {
+  let dataPollsElm = document.querySelector('#data_polls');
+  let tweet = JSON.parse(dataPollsElm.dataset.tweet);
+  let polls = JSON.parse(dataPollsElm.dataset.polls);
 
-{% endfor %}
+  let embedTweetContainer = document.querySelector('#embed_tweet_container');
+  twttr.ready(twttr => {
+    twttr.widgets.createTweet(tweet.id, embedTweetContainer, {
+    }).then(elm => {
+    });
+  });
+
+  let chartPollsElm = document.querySelector('#chart_polls');
+
+  for (let poll of polls) {
+    let chartPollElm = document.createElement('canvas');
+    chartPollElm.width = 160*2;
+    chartPollElm.height = 90*2;
+    chartPollsElm.appendChild(chartPollElm);
+
+    let chartPollCtx = chartPollElm.getContext('2d');
+
+    let options = Object.keys(poll.votes);
+    let timestamps = poll.timestamps;
+    let datasets = [];
+    let backgroundColors = [
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(255, 206, 86, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+    ];
+    let borderColors = [
+      'rgba(255, 99, 132, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(75, 192, 192, 1)',
+    ];
+
+    let sampleCount = poll.votes[options[0]].length;
+    for (let optionIndex in options) {
+      let option = options[optionIndex];
+      let votesList = poll.votes[option];
+      let data = [];
+
+      data.push({
+        'x': tweet.posted_at,
+        'y': 0,
+      });
+
+      for (let votesIndex in votesList) {
+        data.push({
+          'x': timestamps[votesIndex],
+          'y': votesList[votesIndex],
+        })
+      }
+
+      datasets.push({
+        'label': option,
+        'data': data,
+        'backgroundColor': backgroundColors[optionIndex],
+        'borderColor': borderColors[optionIndex],
+        'borderWidth': 1,
+      })
+    }
+
+    let chartPoll = new Chart(chartPollCtx, {
+      'type': 'line',
+      'data': {
+        'datasets': datasets,
+      },
+      'options': {
+        'scales': {
+          'xAxes': [{
+            'type': 'linear',
+            'position': 'bottom',
+            'ticks': {
+              'min': tweet.posted_at,
+              // 'max': poll.endtime,
+            },
+            'callback': (value, index, values) => {
+              return new Date(value);
+            },
+          }],
+        },
+      },
+    });
+
+    break;
+  }
+
+})();
+</script>
 
 {% endblock %}

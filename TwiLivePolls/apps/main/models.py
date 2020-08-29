@@ -6,6 +6,7 @@ from typing import List, Dict
 from django.db import models
 from django.utils import timezone
 
+import json
 from datetime import datetime
 
 # Create your models here.
@@ -75,13 +76,65 @@ class Tweet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    @property
+    def json(self):
+        ret = {
+            'id': self.remote_id,
+            'posted_at': int(self.remote_created_at.timestamp()),
+        }
+        return json.dumps(ret, ensure_ascii=False)
+
+    @property
+    def polls_json(self):
+        remote_ids = self.poll_remote_ids
+
+        ret_polls = []
+        for remote_id in remote_ids:
+            one_poll_logs = Poll.objects.filter(tweet=self, remote_id=remote_id).order_by('checked_at')
+
+            ret_votes = {}
+            ret_timestamps = []
+            for poll in one_poll_logs: # loop one poll logs
+                timestamp = poll.checked_at
+                ret_timestamps.append(int(timestamp.timestamp()))
+
+                for option in poll.options:
+                    label = option.label
+                    votes = option.votes
+                    if label not in ret_votes:
+                        ret_votes[label] = []
+                    ret_votes[label].append(votes)
+
+            ret_polls.append({
+                'id': remote_id,
+                'votes': ret_votes,
+                'timestamps': ret_timestamps,
+            })
+
+        return json.dumps(ret_polls, ensure_ascii=False)
+
     @property
     def polls(self):
         return Poll.objects.filter(tweet=self)
 
     @property
+    def poll_remote_ids(self):
+        uniq_polls = Poll.objects.filter(tweet=self).values('remote_id').distinct()
+
+        remote_ids = [ poll['remote_id'] for poll in uniq_polls ]
+        return remote_ids
+
+    @property
     def last_polls(self):
-        return Poll.objects.filter(tweet=self).order_by('-checked_at').distinct()
+        remote_ids = self.poll_remote_ids
+
+        ids = []
+        for remote_id in remote_ids:
+            last_poll = Poll.objects.filter(tweet=self, remote_id=remote_id).order_by('-checked_at').first()
+            ids.append(last_poll.id)
+
+        return Poll.objects.filter(id__in=ids)
 
     @classmethod
     def update_or_create(cls, tweet: data.TweetPoll, checked_at: datetime) -> Tweet:
