@@ -7,6 +7,7 @@ import requests
 
 from .data import *
 
+# https://developer.twitter.com/en/docs/twitter-api/tweets/lookup/introduction
 def get_tweets(
     ids: List[str],
     raw: bool = False,

@@ -6,6 +6,8 @@ from typing import List, Dict
 from .Poll import *
 from .PublicMetrics import *
 
+# https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/tweet
+
 @dataclass
 class TweetPoll:
     id: str

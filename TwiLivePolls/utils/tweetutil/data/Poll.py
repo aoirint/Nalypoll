@@ -13,6 +13,8 @@ class VotingStatus(Enum):
     OPEN = 'open'
     CLOSED = 'closed'
 
+# https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/poll
+
 @dataclass
 class Poll:
     id: str
