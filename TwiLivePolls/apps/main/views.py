@@ -28,18 +28,20 @@ def index(request):
             _tweet = Tweet.objects.filter(remote_id=tweet_id).first()
             if _tweet is not None:
                 do_redirect = True
+            else:
+                checked_at = timezone.now()
+                tweets = get_tweets(ids=[ str(tweet_id), ])
+                if len(tweets) != 0:
+                    tweet = tweets[0]
 
-            checked_at = timezone.now()
-            tweets = get_tweets(ids=[ str(tweet_id), ])
-            if len(tweets) != 0:
-                tweet = tweets[0]
+                    # TODO: make cache to ignore no poll tweet
+                    if len(tweet.polls) != 0:
+                        # TODO: to use shared task pool (to reduce API call)
+                        # TODO: scheduled data updater
+                        tweet_update = TweetUpdate.update_or_create(tweet, checked_at)
+                        tweet_update.save()
 
-                # TODO: to use shared task pool (to reduce API call)
-                # TODO: scheduled data updater
-                tweet_update = TweetUpdate.update_or_create(tweet, checked_at)
-                tweet_update.save()
-
-                do_redirect = True
+                        do_redirect = True
 
             if do_redirect:
                 return redirect('main:view', tweet_id=tweet_id)

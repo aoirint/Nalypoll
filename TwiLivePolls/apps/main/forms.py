@@ -5,14 +5,14 @@ from urllib.parse import urlparse
 
 from validateutil import TWEET_ID_OR_URL_PATTERN
 
-validator = validators.RegexValidator(
+validate_tweet_id_or_url = validators.RegexValidator(
     regex=TWEET_ID_OR_URL_PATTERN,
     message='Invalid value',
     code='invalid'
 )
 
 class TweetIdOrUrlField(forms.CharField):
-    default_validators = [ validator, ]
+    default_validators = [ validate_tweet_id_or_url, ]
 
 class RegisterForm(forms.Form):
     tweet_id_or_url = TweetIdOrUrlField(
@@ -20,6 +20,8 @@ class RegisterForm(forms.Form):
         max_length=255,
         widget=forms.widgets.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Tweet ID or URL'
+            'placeholder': 'Tweet ID or URL (https://twitter.com/USER/status/TWEET_ID)',
+            'pattern': r'^((\d+)|https://(mobile\.)?twitter\.com/([^/]+)/status/(\d+))$',
+            # 'pattern': TWEET_ID_OR_URL_PATTERN.pattern,
         }),
     )
