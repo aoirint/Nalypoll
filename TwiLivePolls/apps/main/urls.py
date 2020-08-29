@@ -22,4 +22,5 @@ app_name = 'main'
 urlpatterns = [
     path('', views.index, name='index'),
     path('view/<int:tweet_id>', views.view, name='view'),
+    path('update/<int:tweet_id>', views.update, name='update'),
 ]

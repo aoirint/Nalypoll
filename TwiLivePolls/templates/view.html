@@ -1,21 +1,32 @@
-{% extends 'base.html' %}
+{% extends 'base_fluid.html' %}
 
 {% block main %}
 <div class="pt-4"></div>
-
-<div id="embed_tweet_container" class="d-flex justify-content-center"></div>
-
-<hr>
 
 <div id="data_polls"
   data-tweet="{{ tweet.json }}"
   data-polls="{{ tweet.polls_json }}"
 ></div>
 
-<div id="chart_polls"></div>
+<div class="row mx-lg-5">
+  <div id="embed_tweet_container" class="d-flex justify-content-center align-items-center col-12 col-lg-4"></div>
+
+  <div id="chart_polls" class="my-5 py-5 col-12 col-lg-8"></div>
+</div>
 
 <script>
 (function() {
+  function timestampSeconds2label(timestampSeconds) {
+    let de = new Date(timestampSeconds * 1000);
+    let h = new String(de.getHours());
+    if (h.length == 1) h = '0' + h;
+
+    let m = new String(de.getMinutes());
+    if (m.length == 1) m = '0' + m;
+
+    return h + ':' + m;
+  }
+
   let dataPollsElm = document.querySelector('#data_polls');
   let tweet = JSON.parse(dataPollsElm.dataset.tweet);
   let polls = JSON.parse(dataPollsElm.dataset.polls);
@@ -31,8 +42,8 @@
 
   for (let poll of polls) {
     let chartPollElm = document.createElement('canvas');
-    chartPollElm.width = 160*2;
-    chartPollElm.height = 90*2;
+    chartPollElm.width = 1600;
+    chartPollElm.height = 900;
     chartPollsElm.appendChild(chartPollElm);
 
     let chartPollCtx = chartPollElm.getContext('2d');
@@ -91,14 +102,34 @@
             'type': 'linear',
             'position': 'bottom',
             'ticks': {
+              'autoSkip': true,
+              'maxRotation': 90,
+              'minRotation': 90,
               'min': tweet.posted_at,
               // 'max': poll.endtime,
-            },
-            'callback': (value, index, values) => {
-              return new Date(value);
+              'callback': (value, index, values) => {
+                return timestampSeconds2label(value);
+              },
             },
           }],
         },
+        'tooltips': {
+          'mode': 'index',
+          'intersect': false,
+          'itemSort': (a, b, data) => b.yLabel - a.yLabel,
+          'callbacks': {
+            'title': (tooltipItems, data) => {
+              let timestamp = parseInt(tooltipItems[0].xLabel || ''); // original label
+              let title = timestampSeconds2label(timestamp);
+
+              return title;
+            },
+          },
+        },
+        'hover': {
+          'mode': 'index',
+          'intersect': false,
+        }
       },
     });
 

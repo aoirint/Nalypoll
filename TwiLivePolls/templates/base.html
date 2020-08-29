@@ -40,7 +40,7 @@
 }(document, "script", "twitter-wjs"));</script>
 
 
-<nav class="navbar navbar-expand-xs navbar-light bg-light">
+<nav class="navbar navbar-expand navbar-light bg-light">
   <a class="navbar-brand" href="{% url 'main:index' %}">TwiLivePolls</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -57,6 +57,4 @@
   </div>
 </nav>
 
-<div class="container">
-{% block main %}{% endblock %}
-</div>
+{% block content %}{% endblock %}

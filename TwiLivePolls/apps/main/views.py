@@ -14,6 +14,7 @@ def index(request):
     form = RegisterForm(initial={
     })
 
+    # TODO: User auth & limit to register user's own tweets only
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -61,3 +62,16 @@ def view(request, tweet_id: int):
         'tweet_id': tweet_id,
         'tweet': tweet,
     })
+
+# temporary
+def update(request, tweet_id: int):
+    checked_at = timezone.now()
+    tweets = get_tweets(ids=[ str(tweet_id), ])
+    if len(tweets) != 0:
+        tweet = tweets[0]
+
+        if len(tweet.polls) != 0:
+            tweet_update = TweetUpdate.update_or_create(tweet, checked_at)
+            tweet_update.save()
+
+    return redirect('main:view', tweet_id=tweet_id)
