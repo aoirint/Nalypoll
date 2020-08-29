@@ -36,6 +36,12 @@ if ALLOWED_HOST:
     ALLOWED_HOSTS += [ ALLOWED_HOST, ]
 
 
+
+# Environments
+TWITTER_TOKEN = os.environ.get('TWITTER_TOKEN')
+
+
+
 # Application definition
 
 INSTALLED_APPS = [

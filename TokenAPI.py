@@ -42,4 +42,34 @@ class TokenAPI:
 
         assert revoked_token == access_token
 
-        return True
+        return revoked_token
+
+if __name__ == '__main__':
+    import os
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('type', type=str, choices=[ 'new', 'revoke', ])
+    args = parser.parse_args()
+
+    api_key = os.environ.get('API_KEY')
+    api_secret = os.environ.get('API_SECRET')
+
+    if not api_key:
+        api_key = input('API Key: ')
+    if not api_secret:
+        api_secret = input('API Secret: ')
+
+    api = TokenAPI(api_key=api_key, api_secret=api_secret)
+
+    if args.type == 'new':
+        token = api.new_token()
+        print('New Access Token: %s' % token)
+
+    elif args.type == 'revoke':
+        token = os.environ.get('ACCESS_TOKEN')
+        if not token:
+            token = input('Token to revoke: ')
+
+        revoked_token = api.revoke_token(access_token=token)
+        print('Revoked Token: %s' % revoked_token)
