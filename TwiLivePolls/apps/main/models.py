@@ -75,6 +75,14 @@ class Tweet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def polls(self):
+        return Poll.objects.filter(tweet=self)
+
+    @property
+    def last_polls(self):
+        return Poll.objects.filter(tweet=self).order_by('-checked_at').distinct()
+
     @classmethod
     def update_or_create(cls, tweet: data.TweetPoll, checked_at: datetime) -> Tweet:
         _tweet, created = Tweet.objects.update_or_create(
@@ -134,6 +142,10 @@ class Poll(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def options(self):
+        return PollOption.objects.filter(poll=self)
+
     @classmethod
     def create(cls, tweet: Tweet, poll: data.Poll, checked_at: datetime) -> Poll:
         _poll = Poll.objects.create(
@@ -160,7 +172,7 @@ class PollOption(models.Model):
     label = models.TextField()
     votes = models.IntegerField()
     rate = models.FloatField()
-    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='options')
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -20,6 +20,6 @@ from main import views
 app_name = 'main'
 
 urlpatterns = [
-    path('', views.index),
-    path('view/<int:tweet_id>', views.view),
+    path('', views.index, name='index'),
+    path('view/<int:tweet_id>', views.view, name='view'),
 ]

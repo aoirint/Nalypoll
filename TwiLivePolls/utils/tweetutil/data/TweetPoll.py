@@ -51,7 +51,10 @@ class TweetPoll:
     @classmethod
     def create_list_from_root(cls, root) -> List[TweetPoll]:
         polls = Poll.create_map_from_root(root)
-        tweets = root['data']
+        tweets = root.get('data')
+        if tweets is None:
+            # Not Found or something
+            return []
 
         _tweets = cls.create_list(tweets, polls)
         return _tweets

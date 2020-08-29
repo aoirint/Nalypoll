@@ -27,9 +27,13 @@ def get_tweets(
     }
 
     r = requests.get(url, params=params, headers=headers, timeout=timeout)
+
     root = r.json()
     if raw:
         return root
+
+    if r.status_code != 200:
+        return []
 
     tweets = TweetPoll.create_list_from_root(root)
 

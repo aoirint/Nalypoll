@@ -1,6 +1,21 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<h2>Hello</h2>
-WIP
+<h2 class="mt-4">TwiLivePolls</h2>
+<form method="POST">
+  {% csrf_token %}
+  <div class="form-group">
+    <div class="input-group">
+      {{ form.tweet_id_or_url }}
+      <div class="input-group-append">
+        <button type="submit" class="btn btn-primary px-4">確認</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+  </div>
+
+</form>
+
 {% endblock %}
