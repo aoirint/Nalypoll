@@ -19,4 +19,10 @@ def main():
 
 
 if __name__ == '__main__':
+    from utils.socketutil import wait_socket
+    if os.environ.get('DJANGO_DATABASE_ENGINE') == 'django.db.backends.mysql':
+        host = os.environ.get('DJANGO_DATABASE_HOST')
+        port = int(os.environ.get('DJANGO_DATABASE_PORT'))
+        wait_socket(host, port)
+
     main()

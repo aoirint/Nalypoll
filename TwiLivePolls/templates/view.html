@@ -2,5 +2,29 @@
 
 {% block main %}
 <h2>{{ tweet_id }}</h2>
-WIP
+
+<p>
+  {{ tweet_update.tweet.id }}
+
+<p>
+  {{ tweet_update.tweet.text }}
+
+<p>
+  Posted at {{ tweet_update.tweet.remote_created_at }}
+
+{% for pollupd in tweet_update.polls %}
+<h3>Poll {{ pollupd.poll.remote_id }}</h3>
+<ul>
+  <li>End: {{ pollupd.poll.end_datetime }}
+  <li>Duration: {{ pollupd.poll.duration_minutes }} minutes
+</ul>
+
+<ul>
+{% for option in pollupd.options %}
+  <li>{{ option.label }}: {{ option.votes }} ({{ option.percentage |floatformat:-2 }} %)
+{% endfor %}
+</ul>
+
+{% endfor %}
+
 {% endblock %}

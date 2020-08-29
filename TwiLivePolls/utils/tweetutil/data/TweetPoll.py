@@ -3,6 +3,9 @@ from __future__ import annotations # PEP 563: posponed evaluation of annotations
 from dataclasses import dataclass
 from typing import List, Dict
 
+from datetime import datetime
+from dateutil.parser import isoparse
+
 from .Poll import *
 from .PublicMetrics import *
 
@@ -14,6 +17,7 @@ class TweetPoll:
     text: str
     public_metrics: PublicMetrics
     polls: List[Poll]
+    created_at: datetime
 
     @classmethod
     def create_list(cls, tweets: List[Dict], polls: Dict[int, Poll]) -> List[TweetPoll]:
@@ -34,7 +38,13 @@ class TweetPoll:
                 poll = polls[poll_id]
                 tweet_polls.append(poll)
 
-            _tweet = TweetPoll(id=id, text=text, public_metrics=_public_metrics, polls=tweet_polls)
+            created_at = tweet['created_at']
+            _created_at = isoparse(created_at)
+
+            _tweet = TweetPoll(
+                id=id, text=text, public_metrics=_public_metrics,
+                polls=tweet_polls, created_at=_created_at,
+            )
             _tweets.append(_tweet)
         return _tweets
 

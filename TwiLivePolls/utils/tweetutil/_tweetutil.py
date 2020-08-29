@@ -18,7 +18,7 @@ def get_tweets(
     url = 'https://api.twitter.com/2/tweets'
     params = {
         'ids': ','.join(ids),
-        'tweet.fields': 'public_metrics',
+        'tweet.fields': 'public_metrics,created_at',
         'poll.fields': 'duration_minutes,end_datetime,voting_status',
         'expansions': 'attachments.poll_ids',
     }
