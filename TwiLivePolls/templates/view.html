@@ -119,7 +119,7 @@
           'itemSort': (a, b, data) => b.yLabel - a.yLabel,
           'callbacks': {
             'title': (tooltipItems, data) => {
-              let timestamp = parseInt(tooltipItems[0].xLabel || ''); // original label
+              let timestamp = parseInt(tooltipItems[0].xLabel); // original label
               let title = timestampSeconds2label(timestamp);
 
               return title;

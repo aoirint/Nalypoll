@@ -12,6 +12,8 @@ def get_tweets(
     ids: List[str],
     raw: bool = False,
     timeout: float = 3.0,
+    bearer_token: str = None,
+    oauth: OAuth1 = None
 ) -> List[TweetPoll]:
     from django.conf import settings
 
@@ -22,11 +24,17 @@ def get_tweets(
         'poll.fields': 'duration_minutes,end_datetime,voting_status',
         'expansions': 'attachments.poll_ids',
     }
-    headers = {
-        'Authorization': 'Bearer %s' % settings.TWITTER_TOKEN
-    }
 
-    r = requests.get(url, params=params, headers=headers, timeout=timeout)
+    headers = {
+    }
+    if bearer_token:
+        headers['Authorization'] = 'Bearer %s' % bearer_token
+
+    auth = None
+    if oauth:
+        auth = oauth
+
+    r = requests.get(url, params=params, headers=headers, auth=auth, timeout=timeout)
 
     root = r.json()
     if raw:
@@ -38,3 +46,7 @@ def get_tweets(
     tweets = TweetPoll.create_list_from_root(root)
 
     return tweets
+
+
+def get_recent_tweets(screen_name: str, oauth: OAuth1):
+    pass

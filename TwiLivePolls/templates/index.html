@@ -1,7 +1,17 @@
 {% extends 'base_basic.html' %}
+{% load static %}
 
 {% block main %}
 <h2 class="mt-4">TwiLivePolls</h2>
+
+<p>
+  <form method="POST" action="{% url 'main:oauth' %}">
+    {% csrf_token %}
+    <button type="submit">
+      <img src="{% static 'images/auth_twitter.png' %}" alt="Sign in with Twitter">
+    </button>
+  </form>
+
 <form method="POST">
   {% csrf_token %}
   <div class="form-group">

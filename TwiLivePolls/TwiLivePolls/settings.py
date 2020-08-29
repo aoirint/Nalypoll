@@ -41,7 +41,8 @@ if ALLOWED_HOST:
 
 # Environments
 TWITTER_TOKEN = os.environ.get('TWITTER_TOKEN')
-
+TWITTER_API_KEY = os.environ.get('TWITTER_API_KEY')
+TWITTER_API_SECRET = os.environ.get('TWITTER_API_SECRET')
 
 
 # Application definition
@@ -148,3 +149,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+if DEBUG:
+    STATICFILES_DIRS = [ BASE_DIR / 'static', ]
+else:
+    # distribute with your web server
+    pass

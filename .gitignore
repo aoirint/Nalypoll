@@ -3,3 +3,4 @@ __pycache__/
 /.env.django
 /db
 /TwiLivePolls/db.sqlite3
+dump.json
