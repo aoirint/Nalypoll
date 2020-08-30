@@ -108,7 +108,7 @@
               'maxRotation': 90,
               'minRotation': 90,
               'min': tweet.posted_at,
-              // 'max': poll.endtime,
+              'max': poll.end_time,
               'callback': (value, index, values) => {
                 return timestampSeconds2label(value);
               },

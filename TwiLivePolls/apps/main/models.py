@@ -67,6 +67,7 @@ class Tweet(models.Model):
         ret_polls = []
         for remote_id in remote_ids:
             one_poll_logs = Poll.objects.filter(tweet=self, remote_id=remote_id).order_by('checked_at')
+            assert one_poll_logs.count() > 0
 
             ret_votes = {}
             ret_timestamps = []
@@ -83,6 +84,7 @@ class Tweet(models.Model):
 
             ret_polls.append({
                 'id': remote_id,
+                'end_time': one_poll_logs.last().end_datetime.timestamp(),
                 'votes': ret_votes,
                 'timestamps': ret_timestamps,
             })
