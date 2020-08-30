@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append(str(Path(__file__).resolve(strict=True).parent.parent))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TwiAnalyPolls.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Nalypoll.settings')
 
 import django
 django.setup()
