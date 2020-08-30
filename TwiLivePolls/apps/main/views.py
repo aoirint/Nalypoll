@@ -60,7 +60,7 @@ def poll(request, tweet_id: int):
     if tweet is None:
         raise Http404('Not Found')
 
-    return render(request, 'view.html', {
+    return render(request, 'poll.html', {
         'tweet_id': tweet_id,
         'tweet': tweet,
         'twitter': twitter,
