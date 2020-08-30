@@ -11,13 +11,13 @@ services:
       - ./TwiLivePolls:/code
     env_file:
       - .env.django
-    depends_on:
-      - db
-  db:
-    image: mariadb
-    restart: always
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    volumes:
-      - ./db:/var/lib/mysql
-    env_file:
-      - .env.mysql
+  #   depends_on:
+  #     - db
+  # db:
+  #   image: mariadb
+  #   restart: always
+  #   command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  #   volumes:
+  #     - ./db:/var/lib/mysql
+  #   env_file:
+  #     - .env.mysql

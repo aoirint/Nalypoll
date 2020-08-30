@@ -21,7 +21,7 @@ app_name = 'main'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('view/<int:tweet_id>', views.view, name='view'),
+    path('poll/<int:tweet_id>', views.poll, name='poll'),
     path('update/<int:tweet_id>', views.update, name='update'),
     path('oauth', views.oauth, name='oauth'),
     path('oauth/callback', views.oauth_callback, name='oauth_callback'),

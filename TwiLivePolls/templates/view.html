@@ -1,5 +1,7 @@
 {% extends 'base_fluid.html' %}
 
+{% block pagetitle %}{{ tweet.author.name }} (@{{ tweet.author.screen_name }}) さんの投票ツイート: {{ tweet.text_oneline |truncatechars:40}} - TwiLivePolls{% endblock %}
+
 {% block main %}
 <div class="pt-4"></div>
 

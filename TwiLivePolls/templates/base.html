@@ -2,6 +2,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
+<title>{% block pagetitle %}{% endblock %}</title>
+
 <link rel="stylesheet"
   href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
@@ -50,9 +52,9 @@
     <ul class="navbar-nav mr-auto">
     </ul>
     <ul class="navbar-nav">
-{% if screen_name %}
+{% if twitter.is_authenticated %}
       <li class="nav-item">
-        Signed in as <a href="https://twitter.com/{{ screen_name }}" target="_blank">@{{ screen_name }}</a>
+        Signed in as <a href="https://twitter.com/{{ twitter.screen_name }}" target="_blank">@{{ twitter.screen_name }}</a>
       </li>
 {% endif %}
     </ul>

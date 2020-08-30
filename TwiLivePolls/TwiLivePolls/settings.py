@@ -43,6 +43,7 @@ if ALLOWED_HOST:
 TWITTER_TOKEN = os.environ.get('TWITTER_TOKEN')
 TWITTER_API_KEY = os.environ.get('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.environ.get('TWITTER_API_SECRET')
+TWITTER_OAUTH_CALLBACK = os.environ.get('TWITTER_OAUTH_CALLBACK')
 
 
 # Application definition
