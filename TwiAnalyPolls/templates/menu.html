@@ -1,0 +1,24 @@
+{% extends 'base_basic.html' %}
+{% load static %}
+
+{% block pagetitle %}メニュー - TwiAnalyPolls{% endblock %}
+
+{% block main %}
+
+<h2 class="mt-4">メニュー</h2>
+<div class="row">
+  <div class="col-12 my-4">
+    <form method="POST" action="{% url 'main:remove_user_polls' %}">
+      <button type="submit" class="btn btn-danger">投票状況関連データをサービスから削除</button> （過去の投票状況ログを削除します）
+    </form>
+  </div>
+
+  <div class="col-12 my-4">
+    <form method="POST" action="{% url 'main:oauth_remove' %}">
+      <button type="submit" class="btn btn-danger">認証情報をサービスから削除</button> （自動取得が停止します）
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}

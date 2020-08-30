@@ -1,7 +1,7 @@
 {% extends 'base_basic.html' %}
 {% load static %}
 
-{% block pagetitle %}最近の投票ツイート - TwiAnalyPolls{% endblock %}
+{% block pagetitle %}マイページ - TwiAnalyPolls{% endblock %}
 
 {% block main %}
 <h2 class="mt-4">最近の投票ツイート</h2>
@@ -18,7 +18,7 @@
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">
-          <a href="https://twitter.com/{{ tweet.author.username }}/status/{{ tweet.id }}">
+          <a href="https://twitter.com/{{ tweet.author.username }}/status/{{ tweet.id }}" target="_blank">
             {{ tweet.text }}
           </a>
         </h5>

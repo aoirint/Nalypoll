@@ -92,6 +92,17 @@ def me(request):
         'twitter': twitter,
     })
 
+# user menu
+def menu(request):
+    twitter = TwitterSessionOAuth(request)
+
+    if not twitter.is_authenticated():
+        return redirect('main:index')
+
+    return render(request, 'menu.html', {
+        'twitter': twitter,
+    })
+
 # TODO: user can set public/private poll dynamics or random id?
 # public view
 def poll(request, tweet_id: int):
@@ -106,6 +117,19 @@ def poll(request, tweet_id: int):
         'tweet': tweet,
         'twitter': twitter,
     })
+
+def remove_user_polls(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
+
+    twitter = TwitterSessionOAuth(request)
+    if not twitter.is_authenticated():
+        return HttpResponse('Forbidden', code=403)
+
+    user_id = twitter.user_id
+    Poll.objects.filter(tweet__author__remote_id=user_id).delete()
+
+    return redirect('main:menu')
 
 # temporary
 def update(request, tweet_id: int):

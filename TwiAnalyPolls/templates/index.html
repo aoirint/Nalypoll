@@ -9,39 +9,36 @@
 <p>
   <form method="POST" action="{% url 'main:oauth' %}">
     {% csrf_token %}
-    <button type="submit">
+    <button type="submit" class="btn">
       <img src="{% static 'images/auth_twitter.png' %}" alt="Sign in with Twitter">
     </button>
   </form>
-
-<form method="POST">
-  {% csrf_token %}
-  <div class="form-group">
-    <div class="input-group">
-      {{ form.tweet_id_or_url }}
-      <div class="input-group-append">
-        <button type="submit" class="btn btn-primary px-4">確認/登録</button>
-      </div>
-    </div>
-  </div>
-</form>
 
 <hr>
 
 <h3>このアプリケーションは何をしますか？</h3>
 <ul>
-  <li>Twitter連携すると、これを介してあなたの最近のツイートを10件まで取得し、投票が含まれるツイートを一覧表示します。
-  <li>あなたは新しい投票ツイートをしたあと、このアプリケーションにログインして一覧からそのツイートを選択します。
-  <li>このアプリケーションはTwitter連携を介して、そのツイートの投票状況を適当な間隔ごとに取得し、記録します。
+  <li>Twitterでログインすると、トークンを介してあなたの最近のツイートを10件まで取得し、投票が含まれるツイートを一覧表示します。
+  <li>あなたは新しい投票ツイートをしたあと、一覧を表示してそのツイートをサービスに登録することができます。
+  <li>このアプリケーションはあなたのトークンを介して、あなたが登録したツイートの投票状況や周辺情報を適当な間隔ごとに自動取得し、記録します。
+  <li>登録したツイートには個別ページを作り、投票状況の時系列変化をグラフで可視化します。
 </ul>
 
-<p>
-  <a
-    href="https://twitter.com/search?q=card_name%3Apoll2choice_text_only%20OR%20card_name%3Apoll3choice_text_only%20OR%20card_name%3Apoll4choice_text_only%20OR%20card_name%3Apoll2choice_image%20OR%20card_name%3Apoll3choice_image%20OR%20card_name%3Apoll4choice_image"
-    target="_blank"
-    class="btn btn-primary"
-  >
-    投票付きのツイートを検索（Twitter）
-  </a>
+<h3>アプリケーションの使用をやめたいのですが？</h3>
+<ul>
+  <li>ログイン中に表示されるメニューという項目から、次の操作ができます。
+  <li>投票状況関連データを削除
+    <ul>
+      <li>このサービス上に記録した、あなたにひもづいた投票状況に関連するデータを削除します。
+      <li>登録したツイートの投票状況ログ、個別ページが削除されます。
+    </ul>
+  <li>認証情報の削除
+    <ul>
+      <li>投票状況の自動記録に使うトークンを削除します。
+      <li>登録されているツイートがある場合でもトークンがなくなるため記録は停止します。
+      <li>Twitter上で連携を解除してトークンを失効させても記録は停止します。
+      <li>もう一度Twitterでログインして、トークンを再登録することで記録を再開します。
+    </ul>
+</ul>
 
 {% endblock %}

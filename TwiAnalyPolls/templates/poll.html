@@ -96,8 +96,10 @@
       });
 
       for (let votesIndex in votesList) {
+        let time = timestamps[votesIndex];
+        if (time > poll.end_time) continue;
         data.push({
-          'x': timestamps[votesIndex],
+          'x': time,
           'y': votesList[votesIndex],
         })
       }
