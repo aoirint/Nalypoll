@@ -23,6 +23,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('poll/<int:tweet_id>', views.poll, name='poll'),
     path('update/<int:tweet_id>', views.update, name='update'),
+    path('me', views.me, name='me'),
     path('oauth', views.oauth, name='oauth'),
     path('oauth/callback', views.oauth_callback, name='oauth_callback'),
 ]

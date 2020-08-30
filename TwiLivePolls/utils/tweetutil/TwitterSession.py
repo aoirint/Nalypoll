@@ -37,6 +37,8 @@ class TwitterSession:
     def is_authenticated(self) -> bool:
         return False
 
+
+
     def call_api_tweets(self,
         tweet_ids: List[str],
         timeout: float = 3.0,
@@ -57,15 +59,40 @@ class TwitterSession:
 
         return self.http_session.get(url, params=params, timeout=timeout)
 
+    def call_api_recent_search(self,
+        query: str,
+        max_results: int = 10,
+        timeout: float = 3.0,
+    ) -> Dict:
+        if not self.is_authenticated():
+            raise Exception('Not Authorized')
+
+        url = 'https://api.twitter.com/2/tweets/search/recent'
+        params = {
+            'query': query,
+            'max_results': max_results,
+            'tweet.fields': 'public_metrics,created_at',
+            'poll.fields': 'duration_minutes,end_datetime,voting_status',
+            'user.fields': 'protected',
+            'expansions': 'attachments.poll_ids,author_id',
+        }
+
+        return self.http_session.get(url, params=params, timeout=timeout)
+
+
 
     def _update_users(self,
         users: List[Dict],
+        user_id_filter: List[str],
         checked_at: datetime,
     ) -> List[TwitterUser]:
         _users: List[TwitterUser] = []
 
         for user in users:
             remote_id = user['id']
+            if user_id_filter is not None and remote_id not in user_id_filter:
+                continue
+
             _user = TwitterUser.objects.filter(remote_id=remote_id).first()
             if _user is None:
                 _user = TwitterUser(remote_id=remote_id)
@@ -101,6 +128,7 @@ class TwitterSession:
     def _update_tweets(self,
         tweets: List[Dict],
         userid2user: Dict[str, TwitterUser],
+        user_id_filter: List[str],
         checked_at: datetime,
     ) -> List[Tweet]:
         _tweets: List[Tweet] = []
@@ -109,6 +137,9 @@ class TwitterSession:
             remote_id = tweet['id']
 
             author_id = tweet['author_id']
+            if user_id_filter is not None and author_id not in user_id_filter:
+                continue
+
             _author = userid2user[author_id]
 
             _tweet = Tweet.objects.filter(remote_id=remote_id).first()
@@ -142,7 +173,9 @@ class TwitterSession:
 
         for poll in polls:
             remote_id = poll['id']
-            _tweet = pollid2tweet[remote_id]
+            _tweet = pollid2tweet.get(remote_id)
+            if _tweet is None: # filtered
+                continue
 
             options: List[Dict] = poll['options']
             total_votes = sum([ opt['votes'] for opt in options ])
@@ -178,6 +211,7 @@ class TwitterSession:
         root: Dict,
         checked_at: datetime,
         requested_tweet_ids: List[str] = None,
+        user_id_filter: List[str] = None,
     ) -> List[Tweet]:
         with transaction.atomic():
             tweets: List[Dict] = root.get('data', [])
@@ -187,6 +221,7 @@ class TwitterSession:
             users: List[Dict] = includes.get('users', [])
             _users: List[TwitterUser] = self._update_users(
                 users=users,
+                user_id_filter=user_id_filter,
                 checked_at=checked_at,
             )
             userid2user: Dict[str, TwitterUser] = { _user.remote_id: _user for _user in _users }
@@ -196,13 +231,16 @@ class TwitterSession:
             _tweets: List[Tweet] = self._update_tweets(
                 tweets=tweets,
                 userid2user=userid2user,
+                user_id_filter=user_id_filter,
                 checked_at=checked_at,
             )
             tweetid2tweet: Dict[str, Tweet] = { _tweet.remote_id: _tweet for _tweet in _tweets }
             pollid2tweet: Dict[str, Tweet] = {}
             for tweet in tweets:
+                _tweet = tweetid2tweet.get(tweet['id'])
+                if _tweet is None: # filtered
+                    continue
                 for poll_id in tweet.get('attachments', {}).get('poll_ids', []):
-                    _tweet = tweetid2tweet[tweet['id']]
                     pollid2tweet[poll_id] = _tweet
 
             # Poll
@@ -236,6 +274,7 @@ class TwitterSession:
     # TODO: scheduled data updater
     def update_tweets(self,
         tweet_ids: List[str],
+        user_id_filter: List[str] = None,
         timeout: float = 3.0,
     ) -> List[Tweet]:
         checked_at = timezone.now()
@@ -247,16 +286,31 @@ class TwitterSession:
             root=root,
             checked_at=checked_at,
             requested_tweet_ids=tweet_ids,
+            user_id_filter=user_id_filter,
         )
 
         return tweets
 
-    # TODO:
-    def update_recent_user_tweets(self,
+    def get_recent_user_tweets(self,
         user_id: str,
+        max_results: int = 10,
+        timeout: float = 3.0,
+        raw: bool = False,
     ):
-        pass
+        # TODO: validate user_id?
+        checked_at = timezone.now()
+        r = self.call_api_recent_search(query='from:%s -is:retweet' % user_id, max_results=max_results, timeout=timeout)
+        root = r.json()
 
+        if raw:
+            return root
+
+        tweets: List[Tweet] = self._update_with_api_response(
+            root=root,
+            checked_at=checked_at,
+        )
+
+        return tweets
 
 
 class TwitterSessionOAuth(TwitterSession):
@@ -267,6 +321,21 @@ class TwitterSessionOAuth(TwitterSession):
 
     def is_authenticated(self) -> bool:
         return self.screen_name is not None
+
+
+    def update_my_tweets(self,
+        tweet_ids: List[str],
+        timeout: float = 3.0,
+    ) -> List[Tweet]:
+        return self.update_tweets(tweet_ids=tweet_ids, user_id_filter=[ self.user_id, ], timeout=timeout)
+
+    def get_recent_my_tweets(self,
+        max_results: int = 10,
+        timeout: float = 3.0,
+        raw: bool = False,
+    ):
+        user_id = self.user_id
+        return self.get_recent_user_tweets(user_id=user_id, max_results=max_results, timeout=timeout, raw=raw)
 
 
     def start_oauth(self):
@@ -320,8 +389,6 @@ class TwitterSessionOAuth(TwitterSession):
         except requests_oauthlib.oauth1_session.TokenRequestDenied as err:
             # Token request failed with code 401, response was '現在この機能は一時的にご利用いただけません'
             raise err
-
-        print(token)
 
         access_token = token.get('oauth_token')
         access_token_secret = token.get('oauth_token_secret')

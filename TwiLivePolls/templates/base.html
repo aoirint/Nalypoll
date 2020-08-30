@@ -42,7 +42,7 @@
 }(document, "script", "twitter-wjs"));</script>
 
 
-<nav class="navbar navbar-expand navbar-light bg-light">
+<nav class="navbar navbar-expand-md navbar-light bg-light">
   <a class="navbar-brand" href="{% url 'main:index' %}">TwiLivePolls</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -50,11 +50,21 @@
 
   <div class="collapse navbar-collapse" id="navbar">
     <ul class="navbar-nav mr-auto">
+{% if twitter.is_authenticated %}
+      <li class="nav-item">
+        <a href="{% url 'main:me' %}" class="nav-link">あなたの最近の投票ツイート</a>
+      </li>
+{% endif %}
     </ul>
     <ul class="navbar-nav">
 {% if twitter.is_authenticated %}
       <li class="nav-item">
-        Signed in as <a href="https://twitter.com/{{ twitter.screen_name }}" target="_blank">@{{ twitter.screen_name }}</a>
+        <span class="nav-link">
+        ログイン中（<a href="https://twitter.com/{{ twitter.screen_name }}" target="_blank">@{{ twitter.screen_name }}</a>）
+        </span>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'main:me' %}" class="nav-link">ログアウト</a>
       </li>
 {% endif %}
     </ul>

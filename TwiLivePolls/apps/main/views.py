@@ -3,10 +3,12 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 from django.urls import reverse
+from django.http import HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse, Http404
+
+import re
 import requests
 import requests_oauthlib
 from urllib.parse import urlparse, parse_qsl
-from django.http import HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse, Http404
 
 from tweetutil import TwitterSessionOAuth
 from validateutil import TWEET_ID_OR_URL_PATTERN
@@ -40,14 +42,53 @@ def index(request):
     })
 
 # show recent tweets
-def user(request):
+def me(request):
     twitter = TwitterSessionOAuth(request)
 
     if not twitter.is_authenticated():
         return redirect('main:index')
 
-    return render(request, 'index.html', {
-        'form': form,
+    if request.method == 'POST':
+        tweet_id = request.POST.get('tweet_id')
+
+        # validation
+        if not re.match(r'^\d+$', tweet_id):
+            return HttpResponseBadRequest()
+
+        # already registered
+        if Poll.objects.filter(tweet__remote_id=tweet_id).count() != 0:
+            return redirect('main:poll', tweet_id)
+
+        tweets: List[Tweet] = twitter.update_tweets(tweet_ids=[ tweet_id, ])
+        if len(tweets) == 0:
+            return HttpResponseBadRequest() # invalid tweet ID or other user's tweet ID
+
+        return redirect('main:poll', tweet_id)
+
+
+    root: Dict = twitter.get_recent_my_tweets(raw=True)
+    tweets: List[Dict] = root.get('data', [])
+    includes: Dict = root.get('includes', {})
+    polls: List[Dict] = includes.get('polls', [])
+    pollid2poll: Dict[str, Dict] = { poll['id']: poll for poll in polls }
+    users: List[Dict] = includes.get('users', [])
+    userid2user: Dict[str, Dict] = { user['id']: user for user in users }
+
+    for poll in polls:
+        poll['registered'] = Poll.objects.filter(remote_id=poll['id']).first() is not None
+
+        poll['total_votes'] = sum([ option['votes'] for option in poll['options'] ])
+        for option in poll['options']:
+            option['rate'] = option['votes'] / poll['total_votes'] if poll['total_votes'] != 0 else 0.0
+            option['percentage'] = option['rate'] * 100
+
+    for tweet in tweets:
+        poll_ids = tweet.get('attachments', {}).get('poll_ids', [])
+        tweet['author'] = userid2user[tweet['author_id']]
+        tweet['polls'] = [ pollid2poll[poll_id] for poll_id in poll_ids ]
+
+    return render(request, 'me.html', {
+        'tweets': tweets,
         'twitter': twitter,
     })
 
@@ -99,4 +140,4 @@ def oauth_callback(request):
         # Token request failed with code 401, response was '現在この機能は一時的にご利用いただけません'
         return HttpResponse('Token request to Twitter failed with code %d.' % err.status_code, status=400)
 
-    return redirect('main:index')
+    return redirect('main:me')

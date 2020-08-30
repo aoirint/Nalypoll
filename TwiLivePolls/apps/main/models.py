@@ -82,9 +82,11 @@ class Tweet(models.Model):
                         ret_votes[label] = []
                     ret_votes[label].append(votes)
 
+            last_poll_log = one_poll_logs.last()
             ret_polls.append({
                 'id': remote_id,
-                'end_time': one_poll_logs.last().end_datetime.timestamp(),
+                'end_time': last_poll_log.end_datetime.timestamp(),
+                'voting_status': last_poll_log.voting_status,
                 'votes': ret_votes,
                 'timestamps': ret_timestamps,
             })

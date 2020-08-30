@@ -10,10 +10,28 @@
   data-polls="{{ tweet.polls_json }}"
 ></div>
 
-<div class="row mx-lg-5">
-  <div id="embed_tweet_container" class="d-flex justify-content-center align-items-center col-12 col-lg-4"></div>
 
-  <div id="chart_polls" class="my-5 py-5 col-12 col-lg-8"></div>
+<div class="row mx-lg-5">
+  <div class="col-12 col-lg-4">
+    <div class="row h-100">
+      <div class="col-12">
+{% if tweet.last_polls.first.voting_status == 'open' %}
+        <div class="alert alert-primary">
+          投票受付中
+        </div>
+{% else %}
+        <div class="alert alert-success">
+          投票終了
+        </div>
+{% endif %}
+      </div>
+      <div class="col-12">
+        <div id="embed_tweet_container" class="d-flex justify-content-center align-items-center"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="chart_polls" class="my-4 py-4 col-12 col-lg-8"></div>
 </div>
 
 <script>
@@ -84,6 +102,14 @@
         })
       }
 
+      // closed => last votes == final result
+      if (poll.voting_status == 'closed' && votesList.length > 0) {
+        data.push({
+          'x': poll.end_time,
+          'y': votesList[votesList.length - 1],
+        });
+      }
+
       datasets.push({
         'label': option,
         'data': data,
@@ -112,6 +138,12 @@
               'callback': (value, index, values) => {
                 return timestampSeconds2label(value);
               },
+            },
+          }],
+          'yAxes': [{
+            'ticks': {
+              'min': 0,
+              'precision': 0,
             },
           }],
         },
