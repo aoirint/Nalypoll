@@ -3,21 +3,21 @@ services:
   app:
     build: .
     command: bash -c "sleep 1s && python3 manage.py runserver 0.0.0.0:8000"
-    # command: gunicorn -w 4 TwiLivePolls.wsgi -b 0.0.0.0:8000
+    # command: gunicorn -w 4 TwiAnalyPolls.wsgi -b 0.0.0.0:8000
     restart: always
     ports:
       - 127.0.0.1:8000:8000
     volumes:
-      - ./TwiLivePolls:/code
+      - ./TwiAnalyPolls:/code
     env_file:
       - .env.django
-  #   depends_on:
-  #     - db
-  # db:
-  #   image: mariadb
-  #   restart: always
-  #   command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-  #   volumes:
-  #     - ./db:/var/lib/mysql
-  #   env_file:
-  #     - .env.mysql
+    depends_on:
+      - db
+  db:
+    image: mariadb
+    restart: always
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./db:/var/lib/mysql
+    env_file:
+      - .env.mysql
