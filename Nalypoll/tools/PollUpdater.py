@@ -79,8 +79,8 @@ if __name__ == '__main__':
     import schedule
 
     updater = PollUpdater(
-        delta_check_tweets=timedelta(minutes=1),
-        delta_check_users=timedelta(minutes=1),
+        delta_check_tweets=timedelta(minutes=int(os.environ.get('DELTA_CHECK_TWEETS', 15))),
+        delta_check_users=timedelta(minutes=int(os.environ.get('DELTA_CHECK_USERS', 60))),
     )
     connection.close() # explicitly close connection
 
