@@ -33,7 +33,7 @@ DEBUG = os.environ.get('DJANGO_DEBUG') == '1'
 
 ALLOWED_HOSTS = []
 
-ALLOWED_HOST = os.environ.get('ALLOWED_HOST')
+ALLOWED_HOST = os.environ.get('DJANGO_ALLOWED_HOST')
 if ALLOWED_HOST:
     ALLOWED_HOSTS += [ ALLOWED_HOST, ]
 

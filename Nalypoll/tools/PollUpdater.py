@@ -82,6 +82,8 @@ if __name__ == '__main__':
         delta_check_tweets=timedelta(minutes=1),
         delta_check_users=timedelta(minutes=1),
     )
+    connection.close() # explicitly close connection
+
 
     schedule.every(15).minutes.do(updater.update)
 
