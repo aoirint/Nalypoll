@@ -19,25 +19,7 @@ from main.forms import *
 def index(request):
     twitter = TwitterSessionOAuth(request)
 
-    form = RegisterForm(initial={
-    })
-
-    # TODO: User auth & limit to register user's own tweets only
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            tweet_id_or_url = form.cleaned_data['tweet_id_or_url']
-            m = TWEET_ID_OR_URL_PATTERN.match(tweet_id_or_url)
-            tweet_id = m.group('id') or m.group('id_in_url')
-            assert tweet_id
-
-            tweets: List[Tweet] = twitter.update_tweets(tweet_ids=[ tweet_id, ])
-
-            if len(tweets) != 0:
-                return redirect('main:poll', tweet_id=tweet_id)
-
     return render(request, 'index.html', {
-        'form': form,
         'twitter': twitter,
     })
 
