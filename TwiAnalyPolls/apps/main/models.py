@@ -29,6 +29,7 @@ class TwitterUser(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
 
+    # unused
     def on_access(self):
         self.last_access_at = timezone.now()
 
@@ -41,9 +42,11 @@ class Tweet(models.Model):
 
     first_checked_at = models.DateTimeField()
     last_checked_at = models.DateTimeField()
+    is_poll_open = models.BooleanField(null=True)
+    registered_user = models.ForeignKey(TwitterUser, on_delete=models.CASCADE, null=True, related_name='registering_tweets')
 
     remote_created_at = models.DateTimeField()
-    author = models.ForeignKey(TwitterUser, on_delete=models.CASCADE, null=True)
+    author = models.ForeignKey(TwitterUser, on_delete=models.CASCADE, null=True, related_name='tweets')
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

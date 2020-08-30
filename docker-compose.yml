@@ -13,6 +13,16 @@ services:
       - .env.django
     depends_on:
       - db
+  updater:
+    build: .
+    command: bash -c "sleep 1s && python3 tools/PollUpdater.py"
+    restart: always
+    volumes:
+      - ./TwiAnalyPolls:/code
+    env_file:
+      - .env.django
+    depends_on:
+      - db
   db:
     image: mariadb
     restart: always

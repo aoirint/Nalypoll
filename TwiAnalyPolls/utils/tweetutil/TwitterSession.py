@@ -79,6 +79,23 @@ class TwitterSession:
 
         return self.http_session.get(url, params=params, timeout=timeout)
 
+    def call_api_users(self,
+        user_ids: List[str],
+        timeout: float = 3.0,
+    ) -> Dict:
+        if not self.is_authenticated():
+            raise Exception('Not Authorized')
+
+        user_ids = [ str(int(user_id)) for user_id in user_ids ] # validate
+
+        url = 'https://api.twitter.com/2/users'
+        params = {
+            'ids': ','.join(user_ids),
+            'user.fields': 'protected',
+        }
+
+        return self.http_session.get(url, params=params, timeout=timeout)
+
 
 
     def _update_users(self,
@@ -171,6 +188,8 @@ class TwitterSession:
     ) -> List[Poll]:
         _polls = []
 
+        tweetid2open = {}
+        _tweets = set()
         for poll in polls:
             remote_id = poll['id']
             _tweet = pollid2tweet.get(remote_id)
@@ -179,13 +198,17 @@ class TwitterSession:
 
             options: List[Dict] = poll['options']
             total_votes = sum([ opt['votes'] for opt in options ])
+            voting_status = poll['voting_status']
+
+            tweetid2open[_tweet.remote_id] = tweetid2open.get(_tweet.remote_id, False) or voting_status == 'open'
+            _tweets.add(_tweet)
 
             _poll = Poll(
                 tweet=_tweet,
                 remote_id=remote_id,
                 end_datetime=isoparse(poll['end_datetime']),
                 duration_minutes=poll['duration_minutes'],
-                voting_status=poll['voting_status'],
+                voting_status=voting_status,
                 total_votes=total_votes,
                 checked_at=checked_at,
             )
@@ -204,6 +227,11 @@ class TwitterSession:
                     rate=rate,
                 )
                 _opt.save()
+
+        for _tweet in _tweets:
+            is_open = tweetid2open[_tweet.remote_id]
+            _tweet.is_poll_open = is_open
+            _tweet.save()
 
         return _polls
 
@@ -290,6 +318,20 @@ class TwitterSession:
         )
 
         return tweets
+
+
+    def update_users(self,
+        user_ids: List[str],
+        timeout: float = 3.0,
+    ) -> List[TwitterUser]:
+        checked_at = timezone.now()
+        r = self.call_api_users(user_ids=user_ids, timeout=timeout)
+        root = r.json()
+
+        users = root.get('data', [])
+
+        return self._update_users(users=users, user_id_filter=None, checked_at=checked_at)
+
 
     def get_recent_user_tweets(self,
         user_id: str,
@@ -453,8 +495,12 @@ class TwitterSessionOAuth(TwitterSession):
     def user_id(self):
         return self.request.session.get('user_id')
 
+    @property
+    def current_user(self) -> TwitterUser:
+        return TwitterUser.objects.filter(remote_id=self.user_id).first()
+
 class TwitterSessionBearer(TwitterSession):
-    def __init__(self, request):
+    def __init__(self, request=None):
         super().__init__()
 
         self.request = request

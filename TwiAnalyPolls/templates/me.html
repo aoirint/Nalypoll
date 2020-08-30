@@ -31,7 +31,7 @@
         </ul>
 
         <div class="text-right">
-{% if not poll.registered %}
+{% if not tweet.registered %}
           <button type="submit" data-tweet="{{ tweet.id }}" form="register_form" class="btn btn-primary register-tweet-button px-4">登録</button>
 {% else %}
           <a href="{% url 'main:poll' tweet.id %}" class="btn btn-secondary px-4">確認</a>

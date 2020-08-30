@@ -10,7 +10,7 @@ import requests
 import requests_oauthlib
 from urllib.parse import urlparse, parse_qsl
 
-from tweetutil import TwitterSessionOAuth
+from tweetutil import TwitterSessionOAuth, TwitterSessionBearer
 from validateutil import TWEET_ID_OR_URL_PATTERN
 from main.models import *
 from main.forms import *
@@ -26,6 +26,8 @@ def index(request):
 # show recent tweets
 def me(request):
     twitter = TwitterSessionOAuth(request)
+    twitter_bearer = TwitterSessionBearer(request)
+    current_user = twitter.current_user
 
     if not twitter.is_authenticated():
         return redirect('main:index')
@@ -37,18 +39,34 @@ def me(request):
         if not re.match(r'^\d+$', tweet_id):
             return HttpResponseBadRequest()
 
-        # already registered
-        if Poll.objects.filter(tweet__remote_id=tweet_id).count() != 0:
+        tweet = Tweet.objects.filter(
+            remote_id=tweet_id,
+            # author=current_user,
+        ).first()
+
+        if tweet is not None and tweet.registered_user == current_user:
             return redirect('main:poll', tweet_id)
 
-        tweets: List[Tweet] = twitter.update_tweets(tweet_ids=[ tweet_id, ])
-        if len(tweets) == 0:
-            return HttpResponseBadRequest() # invalid tweet ID or other user's tweet ID
+        if tweet is None or tweet.registered_user is None:
+            tweets = twitter_bearer.update_tweets(
+                tweet_ids=[ tweet_id ],
+                user_id_filter=[ current_user.remote_id ],
+            )
+            if len(tweets) == 0:
+                # invalid request
+                return HttpResponseBadRequest() # forbidden or badrequest, protected user
+
+            tweet = tweets[0]
+
+        assert tweet is not None
+        tweet.registered_user = current_user
+        tweet.save()
 
         return redirect('main:poll', tweet_id)
 
 
-    root: Dict = twitter.get_recent_my_tweets(raw=True)
+    root: Dict = twitter_bearer.get_recent_user_tweets(current_user.remote_id, raw=True)
+
     tweets: List[Dict] = root.get('data', [])
     includes: Dict = root.get('includes', {})
     polls: List[Dict] = includes.get('polls', [])
@@ -57,17 +75,18 @@ def me(request):
     userid2user: Dict[str, Dict] = { user['id']: user for user in users }
 
     for poll in polls:
-        poll['registered'] = Poll.objects.filter(remote_id=poll['id']).first() is not None
-
         poll['total_votes'] = sum([ option['votes'] for option in poll['options'] ])
         for option in poll['options']:
             option['rate'] = option['votes'] / poll['total_votes'] if poll['total_votes'] != 0 else 0.0
             option['percentage'] = option['rate'] * 100
 
     for tweet in tweets:
+        _tweet = Tweet.objects.filter(remote_id=tweet['id']).first()
+
         poll_ids = tweet.get('attachments', {}).get('poll_ids', [])
         tweet['author'] = userid2user[tweet['author_id']]
         tweet['polls'] = [ pollid2poll[poll_id] for poll_id in poll_ids ]
+        tweet['registered'] = _tweet is not None and _tweet.registered_user == current_user
 
     return render(request, 'me.html', {
         'tweets': tweets,
@@ -90,7 +109,7 @@ def menu(request):
 def poll(request, tweet_id: int):
     twitter = TwitterSessionOAuth(request)
 
-    tweet = Tweet.objects.filter(remote_id=tweet_id, poll__isnull=False).distinct().first()
+    tweet = Tweet.objects.filter(remote_id=tweet_id, poll__isnull=False, author__protected=False).distinct().first()
     if tweet is None:
         raise Http404('Not Found')
 
@@ -108,16 +127,22 @@ def remove_user_polls(request):
     if not twitter.is_authenticated():
         return HttpResponse('Forbidden', code=403)
 
-    user_id = twitter.user_id
-    Poll.objects.filter(tweet__author__remote_id=user_id).delete()
+    current_user = twitter.current_user
+
+    Poll.objects.filter(tweet__author=current_user).delete()
+
+    for tweet in Tweet.objects.filter(registered_user=current_user):
+        tweet.registered_user = None
+        tweet.save()
 
     return redirect('main:menu')
 
 # temporary
 def update(request, tweet_id: int):
     twitter = TwitterSessionOAuth(request)
+    twitter_bearer = TwitterSessionBearer(request)
 
-    tweets: List[Tweet] = twitter.update_tweets(tweet_ids=[ str(tweet_id), ])
+    tweets: List[Tweet] = twitter_bearer.update_tweets(tweet_ids=[ str(tweet_id), ])
 
     return redirect('main:poll', tweet_id=tweet_id)
 
