@@ -141,3 +141,27 @@ def oauth_callback(request):
         return HttpResponse('Token request to Twitter failed with code %d.' % err.status_code, status=400)
 
     return redirect('main:me')
+
+# remove tokens from DB
+def oauth_remove(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
+
+    twitter = TwitterSessionOAuth(request)
+
+    response = redirect('main:index')
+    twitter.remove_oauth(response)
+
+    return response
+
+# remove tokens from user session
+def oauth_logout(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
+
+    twitter = TwitterSessionOAuth(request)
+
+    response = redirect('main:index')
+    twitter.logout(response)
+
+    return response

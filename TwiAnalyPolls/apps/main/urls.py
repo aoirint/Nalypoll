@@ -26,4 +26,6 @@ urlpatterns = [
     path('me', views.me, name='me'),
     path('oauth', views.oauth, name='oauth'),
     path('oauth/callback', views.oauth_callback, name='oauth_callback'),
+    path('oauth/remove', views.oauth_remove, name='oauth_remove'),
+    path('oauth/logout', views.oauth_logout, name='oauth_logout'),
 ]

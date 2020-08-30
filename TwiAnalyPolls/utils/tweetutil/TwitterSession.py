@@ -410,6 +410,26 @@ class TwitterSessionOAuth(TwitterSession):
         user.token_saved_at = timezone.now()
         user.save()
 
+    def remove_oauth(self, response=None):
+        user_id = self.request.session['user_id']
+
+        user = TwitterUser.objects.filter(remote_id=user_id).first()
+        user.access_token = None
+        user.access_token_secret = None
+        user.token_saved_at = None
+        user.save()
+
+        self.logout(response)
+
+    def logout(self, response=None):
+        self.request.session['access_token'] = None
+        self.request.session['access_token_secret'] = None
+        self.request.session['screen_name'] = None
+        self.request.session['user_id'] = None
+
+        if response is not None:
+            response.delete_cookie('oauth_token')
+            response.delete_cookie('oauth_token_secret')
 
     @property
     def http_session(self):

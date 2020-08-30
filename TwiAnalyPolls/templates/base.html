@@ -52,7 +52,7 @@
     <ul class="navbar-nav mr-auto">
 {% if twitter.is_authenticated %}
       <li class="nav-item">
-        <a href="{% url 'main:me' %}" class="nav-link">あなたの最近の投票ツイート</a>
+        <a href="{% url 'main:me' %}" class="nav-link">マイページ</a>
       </li>
 {% endif %}
     </ul>
@@ -64,7 +64,10 @@
         </span>
       </li>
       <li class="nav-item">
-        <a href="{% url 'main:me' %}" class="nav-link">ログアウト</a>
+        <form method="POST" action="{% url 'main:oauth_logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn nav-link">ログアウト</button>
+        </form>
       </li>
 {% endif %}
     </ul>
