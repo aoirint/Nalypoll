@@ -48,9 +48,13 @@ def me(request):
             return redirect('main:poll', tweet_id)
 
         if tweet is None or tweet.registered_user is None:
+            user_id_filter = [ current_user.remote_id ]
+            if settings.CAN_REGISTER_ALL_TWEET:
+                user_id_filter = []
+
             tweets = twitter_bearer.update_tweets(
                 tweet_ids=[ tweet_id ],
-                user_id_filter=[ current_user.remote_id ],
+                user_id_filter=user_id_filter,
             )
             if len(tweets) == 0:
                 # invalid request
