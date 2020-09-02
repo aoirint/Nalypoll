@@ -41,6 +41,10 @@
 
 <script>
 (function() {
+  let chartScaleRate = 1.6; // 1280x720
+
+  Chart.defaults.global.defaultFontSize = 12 * chartScaleRate;
+
   function timestampSeconds2label(timestampSeconds) {
     let de = new Date(timestampSeconds * 1000);
     let y = new String(de.getFullYear()).slice(-2);
@@ -141,13 +145,13 @@
         },
         'title': {
           'display': true,
-          'fontSize': 24,
+          'fontSize': 24 * chartScaleRate,
           'text': title,
         },
         'legend': {
           'display': true,
           'labels': {
-            'fontSize': 18,
+            'fontSize': 18 * chartScaleRate,
           },
         },
         'scales': {
@@ -277,8 +281,8 @@
 
   for (let poll of polls) {
     let chartPollElm = document.createElement('canvas');
-    chartPollElm.width = 800;
-    chartPollElm.height = 450;
+    chartPollElm.width = 800 * chartScaleRate;
+    chartPollElm.height = 450 * chartScaleRate;
     chartPollElm.style.width = '100%';
 
     let chartPoll = renderChart(poll, chartPollElm);
@@ -296,8 +300,8 @@
     let chartPollElm = document.createElement('canvas');
     chartPollElm.style.position = 'absolute';
     chartPollElm.style.display = 'none';
-    chartPollElm.width = chartPollElm.style.width = 800;
-    chartPollElm.height = chartPollElm.style.height = 450;
+    chartPollElm.width = chartPollElm.style.width = 800 * chartScaleRate;
+    chartPollElm.height = chartPollElm.style.height = 450 * chartScaleRate;
 
     document.body.appendChild(chartPollElm);
 
