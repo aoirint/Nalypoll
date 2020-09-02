@@ -1,6 +1,7 @@
+{% load static %}
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
 
 <title>{% block pagetitle %}{% endblock %}</title>
 
@@ -26,6 +27,17 @@
 <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.17.0/js/md5.min.js"
   integrity="sha256-cpbDsuAF6YYKGsywuE65CvzsMKN6x4m6733ZnT3QHHE="
   crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@5.16.0/dist/d3.min.js"
+  integrity="sha256-Xb6SSzhH3wEPC4Vy3W70Lqh9Y3Du/3KxPqI2JHQSpTw="
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"
+  integrity="sha256-Xjq9HM9n3XzT47n/NmSEaJUwPi7hme++D8mxHfSr+0Q="
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"
+  integrity="sha256-ur/YlHMU96MxHEsy3fHGszZHas7NzH4RQlD4tDVvFhw="
+  crossorigin="anonymous"></script>
+<script src="{% static 'js/barchartrace.js' %}"></script>
 
 
 <!-- https://developer.twitter.com/en/docs/twitter-for-websites/javascript-api/guides/set-up-twitter-for-websites -->
@@ -83,3 +95,4 @@
 </nav>
 
 {% block content %}{% endblock %}
+{% block main2 %}{% endblock %}

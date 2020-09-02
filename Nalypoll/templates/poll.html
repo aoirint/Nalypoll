@@ -77,6 +77,23 @@
   </div>
 </div>
 
+{% endblock %}
+
+
+{% block main2 %}
+<div class="container my-4">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">
+        {{ tweet.text }}
+        <br>
+        by {{ tweet.author.name }} (@{{ tweet.author.screen_name }})
+      </h5>
+      <div id="chartDiv" style="width: 100%; height: 650px;"></div>
+    </div>
+    </div>
+</div>
+
 <script>
 (function() {
   let chartScaleRate = 1.6; // 1280x720
@@ -369,16 +386,13 @@
   });
 
   let downloadAsCSVButton = document.querySelector('#download_as_csv_button');
-  downloadAsCSVButton.addEventListener('click', event => {
-    downloadAsCSVButton.disabled = true;
-
+  function createCSV() {
     let poll = polls.length > 0 ? polls[0] : null;
-    if (! poll) return;
-
-    let options = Object.keys(poll.votes);
-    let numOfData = poll.length;
+    if (! poll) return null;
 
     let output = '';
+
+    let options = Object.keys(poll.votes);
     for (let option of options) {
       let votesList = poll.votes[option];
       let data = getFixedVoteData(votesList, poll.timestamps, tweet.posted_at, poll.end_time);
@@ -388,7 +402,11 @@
       }
     }
 
-    console.log(output);
+    return output;
+  }
+  downloadAsCSVButton.addEventListener('click', event => {
+    downloadAsCSVButton.disabled = true;
+    let output = createCSV();
 
     let hash = md5(output);
     let anchor = document.createElement('a');
@@ -401,6 +419,35 @@
 
     downloadAsCSVButton.disabled = false;
   });
+
+
+
+
+  let duration = 20;
+  let csvText = createCSV();
+  Papa.parse(csvText, {
+    'header': false,
+    'skipEmptyLines': true,
+    'complete': (results) => {
+      if (Object.keys(results.data[0].length == 3)) {
+        results.data = reshapeBarChartRaceData(results.data);
+      }
+      let csvData = results.data;
+      let topN = Object.keys(polls[0].votes).length;
+
+      let tickDuration = duration / csvData.length * 1000;
+
+      let bcrInterval = createBarChartRace(csvData, topN, tickDuration,
+        // onGraphUpdated
+        (svg) => {
+        },
+        // onFinished
+        () => {
+        }
+      ); // #chartDiv
+    },
+  })
+
 
 })();
 </script>
