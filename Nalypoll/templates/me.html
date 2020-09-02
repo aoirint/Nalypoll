@@ -6,11 +6,6 @@
 {% block main %}
 <h2 class="mt-4">最近の投票ツイート</h2>
 
-<form id="register_form" method="POST">
-  {% csrf_token %}
-  <input id="tweet_id_input" name="tweet_id" type="hidden">
-</form>
-
 <div class="row">
 {% for tweet in tweets %}
 {% if tweet.attachments.poll_ids %}
@@ -30,11 +25,15 @@
 {% endfor %}
         </ul>
 
-        <div class="text-right">
+        <div class="d-flex justify-content-end">
 {% if not tweet.registered %}
-          <button type="submit" data-tweet="{{ tweet.id }}" form="register_form" class="btn btn-primary register-tweet-button px-4">登録</button>
-{% else %}
-          <a href="{% url 'main:poll' tweet.id %}" class="btn btn-secondary px-4">確認</a>
+          <form method="POST" action="{% url 'main:register_poll' tweet.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary register-tweet-button px-4">登録</button>
+          </form>
+{% endif %}
+{% if tweet.poll_data_on_service %}
+          <a href="{% url 'main:poll' tweet.id %}" class="btn btn-secondary ml-4 px-4">確認</a>
 {% endif %}
         </div>
 {% endfor %}
@@ -45,16 +44,5 @@
 {% endif %}
 {% endfor %}
 </div>
-
-<script>
-(function() {
-  let tweetIdInput = document.querySelector('#tweet_id_input');
-  [...document.querySelectorAll('.register-tweet-button')].forEach(button => {
-    button.addEventListener('click', event => {
-      tweetIdInput.value = button.dataset.tweet;
-    });
-  });
-})();
-</script>
 
 {% endblock %}

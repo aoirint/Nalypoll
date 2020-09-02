@@ -56,6 +56,14 @@ class Tweet(models.Model):
         return self.text.replace('\n', ' ')
 
     @property
+    def registered(self):
+        return self.registered_user is not None
+
+    @property
+    def has_poll_log(self):
+        return self.polls.count() > 0
+
+    @property
     def json(self):
         ret = {
             'id': self.remote_id,

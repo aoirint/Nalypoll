@@ -10,10 +10,6 @@
   data-polls="{{ tweet.polls_json }}"
 ></div>
 
-<form id="delete_form" method="POST" action="{% url 'main:remove_poll' tweet.remote_id %}">
-  {% csrf_token %}
-</form>
-
 <div class="row mx-lg-5">
   <div class="col-12 col-lg-4">
     <div class="row">
@@ -39,13 +35,40 @@
     <div class="my-4 d-flex justify-content-end">
       <button id="download_as_image_button" type="button" class="btn btn-primary">画像としてダウンロード</button>
     </div>
+
     <div class="my-4 d-flex justify-content-end">
-      <button type="submit" class="btn btn-danger"
-        form="delete_form"
-        onclick="return confirm('ログデータを削除しますか？（ツイートは削除されませんが、サービスに蓄積された投票状況などのデータが削除されます）');">
-        ログデータを削除
-      </button>
+{% if tweet.registered %}
+      <form id="unregister_form" method="POST" action="{% url 'main:unregister_poll' tweet.remote_id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"
+          form="unregister_form"
+          onclick="return confirm('ツイートの登録を解除しますか？（自動更新が停止します）');">
+          登録を解除
+        </button>
+      </form>
+{% else %}
+      <form id="register_form" method="POST" action="{% url 'main:register_poll' tweet.remote_id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success"
+          form="register_form"
+          onclick="return confirm('ツイートを登録しますか？（自動更新が開始します）');">
+          ツイートを登録
+        </button>
+      </form>
+{% endif %}
     </div>
+
+    <div class="my-4 d-flex justify-content-end">
+      <form id="delete_form" method="POST" action="{% url 'main:remove_poll' tweet.remote_id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"
+          form="delete_form"
+          onclick="return confirm('ログデータを削除しますか？（ツイートは削除されませんが、サービスに蓄積された投票状況などのデータが削除されます）');">
+          ログデータを削除
+        </button>
+      </form>
+    </div>
+
   </div>
 </div>
 
