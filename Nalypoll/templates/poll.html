@@ -33,7 +33,12 @@
   <div class="col-12 col-lg-8">
     <div id="chart_polls"></div>
     <div class="my-4 d-flex justify-content-end">
-      <button id="download_as_image_button" type="button" class="btn btn-primary">画像としてダウンロード</button>
+      <button id="download_as_image_button" type="button" class="btn btn-primary" title="PNG画像としてダウンロード">
+        画像としてダウンロード
+      </button>
+      <button id="download_as_csv_button" type="button" class="btn btn-secondary ml-4" title="タイムスタンプ,選択肢,得票数 形式のCSVとしてダウンロード">
+        CSVとしてダウンロード
+      </button>
     </div>
 
     <div class="my-4 d-flex justify-content-end">
@@ -104,6 +109,35 @@
     ];
   }
 
+  function getFixedVoteData(votesList, timestamps, posted_at, end_time) {
+    let data = [];
+
+    data.push({
+      'x': posted_at,
+      'y': 0,
+    });
+
+    for (let timestampIndex in timestamps) {
+      let time = timestamps[timestampIndex];
+      if (time > end_time) continue;
+
+      data.push({
+        'x': time,
+        'y': votesList[timestampIndex],
+      });
+    }
+
+    // closed => last votes == final result
+    if (timestamps.length > 0 && timestamps[timestamps.length - 1] >= end_time) {
+      data.push({
+        'x': end_time,
+        'y': votesList[timestamps.length - 1],
+      });
+    }
+
+    return data;
+  }
+
   function renderChart(poll, canvasElm, completion) {
     let chartPollCtx = canvasElm.getContext('2d');
 
@@ -128,31 +162,9 @@
     for (let optionIndex in options) {
       let option = options[optionIndex];
       let votesList = poll.votes[option];
-      let data = [];
+      let data = getFixedVoteData(votesList, poll.timestamps, tweet.posted_at, poll.end_time);
 
       // option = '選択肢' + optionIndex;
-
-      data.push({
-        'x': tweet.posted_at,
-        'y': 0,
-      });
-
-      for (let votesIndex in votesList) {
-        let time = timestamps[votesIndex];
-        if (time > poll.end_time) continue;
-        data.push({
-          'x': time,
-          'y': votesList[votesIndex],
-        })
-      }
-
-      // closed => last votes == final result
-      if (poll.voting_status == 'closed' && votesList.length > 0) {
-        data.push({
-          'x': poll.end_time,
-          'y': votesList[votesList.length - 1],
-        });
-      }
 
       datasets.push({
         'label': option,
@@ -328,6 +340,7 @@
     downloadAsImageButton.disabled = true;
 
     let poll = polls.length > 0 ? polls[0] : null;
+    if (! poll) return;
 
     let chartPollElm = document.createElement('canvas');
     chartPollElm.style.position = 'absolute';
@@ -349,9 +362,44 @@
 
       document.body.appendChild(anchor);
       anchor.click();
+      document.body.removeChild(anchor);
 
       downloadAsImageButton.disabled = false;
     });
+  });
+
+  let downloadAsCSVButton = document.querySelector('#download_as_csv_button');
+  downloadAsCSVButton.addEventListener('click', event => {
+    downloadAsCSVButton.disabled = true;
+
+    let poll = polls.length > 0 ? polls[0] : null;
+    if (! poll) return;
+
+    let options = Object.keys(poll.votes);
+    let numOfData = poll.length;
+
+    let output = '';
+    for (let option of options) {
+      let votesList = poll.votes[option];
+      let data = getFixedVoteData(votesList, poll.timestamps, tweet.posted_at, poll.end_time);
+
+      for (let entry of data) {
+        output += entry['x'] + ',' + option + ',' + entry['y'] + '\n';
+      }
+    }
+
+    console.log(output);
+
+    let hash = md5(output);
+    let anchor = document.createElement('a');
+    anchor.download = hash + '.csv';
+    anchor.href = 'data:text/csv;base64,' + window.btoa(unescape(encodeURIComponent(output)));
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+
+    downloadAsCSVButton.disabled = false;
   });
 
 })();
