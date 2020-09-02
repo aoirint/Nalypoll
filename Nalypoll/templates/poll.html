@@ -422,6 +422,21 @@
 
 
 
+  function renderSvg(canvas, svg) {
+    let svgData = new XMLSerializer().serializeToString(svg);
+
+    let image = new Image();
+    image.onload = () => {
+      let ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(image, 0, 0);
+    };
+    image.src = 'data:image/svg+xml;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+  }
+
 
   let duration = 20;
   let csvText = createCSV();
@@ -437,13 +452,54 @@
 
       let tickDuration = duration / csvData.length * 1000;
 
+      let firstFrame = true;
+
+      let canvas = document.createElement('canvas');
+      document.body.appendChild(canvas);
+
+      let chunks = [];
+      let capStream, recorder;
+
       let bcrInterval = createBarChartRace(csvData, topN, tickDuration,
         // onGraphUpdated
         (svg) => {
+          renderSvg(canvas, svg);
+
+          if (firstFrame) {
+            canvas.width = svg.width.baseVal.value;
+            canvas.height = svg.height.baseVal.value;
+
+            // 没、おそい
+            capStream = canvas.captureStream(30);
+            recorder = new MediaRecorder(capStream);
+            recorder.start();
+            recorder.ondataavailable = e => {
+              chunks.push(e.data);
+            };
+            recorder.onstop = e => {
+              let blob = new Blob(chunks, { 'type': 'video/webm', });
+              let reader = new FileReader();
+              reader.readAsDataURL(blob);
+              reader.onloadend = () => {
+                let dataUrl = reader.result;
+
+                let anchor = document.createElement('a');
+                anchor.download = 'hash.webm';
+                anchor.href = dataUrl;
+
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+              };
+            };
+
+            firstFrame = false;
+          }
         },
         // onFinished
         () => {
-        }
+          recorder.stop();
+        },
       ); // #chartDiv
     },
   })
