@@ -118,7 +118,7 @@ def poll(request, tweet_id: int):
 
     tweet = Tweet.objects.filter(
         remote_id=tweet_id,
-        # author__remote_id=twitter.user_id,
+        author__remote_id=twitter.user_id,
         poll__isnull=False,
         # author__protected=False,
     ).distinct().first()
