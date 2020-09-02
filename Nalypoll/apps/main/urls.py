@@ -22,6 +22,7 @@ app_name = 'main'
 urlpatterns = [
     path('', views.index, name='index'),
     path('poll/<int:tweet_id>', views.poll, name='poll'),
+    path('poll/register', views.register_poll, name='register_poll'), # POST
     path('poll/register/<int:tweet_id>', views.register_poll, name='register_poll'),
     path('poll/unregister/<int:tweet_id>', views.unregister_poll, name='unregister_poll'),
     path('poll/remove/<int:tweet_id>', views.remove_poll, name='remove_poll'),

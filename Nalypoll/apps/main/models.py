@@ -68,10 +68,14 @@ class Tweet(models.Model):
         return self.polls.count() > 0
 
     @property
+    def text_unescaped(self):
+        return self.text.replace('&quot;', '"').replace('&#39;', "'").replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+
+    @property
     def json(self):
         ret = {
             'id': self.remote_id,
-            'text': self.text,
+            'text': self.text_unescaped,
             'author': {
                 'name': self.author.name,
                 'screen_name': self.author.screen_name,

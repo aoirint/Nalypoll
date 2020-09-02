@@ -25,12 +25,15 @@
 // SOFTWARE.
 //
 
+let dateKey = 'date_' + '_____' + '__________' + '__________' + '_'; // > 30 chars
+
 function reshapeBarChartRaceData(data) {
     // groupby dates (first column)
-    column_names = new Set(data.map(x => x[Object.keys(x)[1]]));
+    let column_names = new Set(data.map(x => x[Object.keys(x)[1]]));
     const grouped_by_date = _.groupBy(data, (e) => e[Object.keys(e)[0]]);
     return Object.keys(grouped_by_date).sort().map((k) => {
-        item = {'date': k};
+        let item = {};
+        item[dateKey] = k;
         column_names.forEach((n) => item[n] = 0);
         grouped_by_date[k].forEach((e) => item[e[Object.keys(e)[1]]] = e[Object.keys(e)[2]]);
         return item
@@ -74,11 +77,11 @@ function createBarChartRace(data, top_n, tickDuration, onGraphUpdated, onFinishe
             d.rank = i;
             d.lastValue = (row_index > 0) ? data[row_index - 1][d.name] : d.value;
         });
-        return [row[d3.keys(row)[0]], new_data]
+        return [row[dateKey], new_data]
     }
 
-    const time_index = d3.keys(data[0])[0];
-    const column_names = d3.keys(data[0]).slice(1,);
+    const time_index = d3.keys(data[0]).indexOf(dateKey);
+    const column_names = d3.keys(data[0]).slice(0, time_index).concat(d3.keys(data[0]).slice(time_index+1,));
 
     // define a random color for each column
     const colors = {};
@@ -94,18 +97,16 @@ function createBarChartRace(data, top_n, tickDuration, onGraphUpdated, onFinishe
         // const parseTime = d3.timeParse("%Y-%m-%d");
         // first column : timestamp in seconds
         const parseTime = d3.timeParse("%s");
-        d[time_index] = parseTime(d[time_index]);
+        d[dateKey] = parseTime(d[dateKey]);
         // convert other columns to numbers
         column_names.forEach((k) => d[k] = Number(d[k]))
-
     });
 
     // draw the first frame
 
     [time, row_data] = getRowData(data, column_names, 0);
-
-    start_date = d3.min(data, d => d[time_index]);
-    end_date = d3.max(data, d => d[time_index]);
+    start_date = d3.min(data, d => d[dateKey]);
+    end_date = d3.max(data, d => d[dateKey]);
 
     let t = d3.scaleTime()
         .domain([start_date, end_date])
@@ -137,15 +138,14 @@ function createBarChartRace(data, top_n, tickDuration, onGraphUpdated, onFinishe
         .selectAll('.tick line')
         .classed('origin', d => d === 0);
 
-
     svg.selectAll('rect.bar')
         .data(row_data, d => d.name)
         .enter()
         .append('rect')
         .attr('class', 'bar')
         .attr('transform', `translate(8, 0)`)
-        // .attr('x', x(0) + 1)
-        .attr('x', 1)
+        .attr('x', x(0) + 1)
+        // .attr('x', 1)
         .attr('width', d => x(d.value) - x(0))
         .attr('y', d => y(d.rank) + barPadding / 2)
         .attr('height', y(1) - y(0) - barPadding)
@@ -228,6 +228,7 @@ function createBarChartRace(data, top_n, tickDuration, onGraphUpdated, onFinishe
             .duration(tickDuration)
             .ease(d3.easeLinear)
             .attr('width', d => x(d.value) - x(0))
+            .attr('x', d => x(0))
             .attr('y', d => y(d.rank) + barPadding / 2);
 
         bars.exit()

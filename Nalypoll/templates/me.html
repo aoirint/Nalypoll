@@ -29,7 +29,7 @@
 {% if tweet.can_register %}
           <form method="POST" action="{% url 'main:register_poll' tweet.id %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-primary register-tweet-button px-4">登録</button>
+            <button type="submit" class="btn btn-primary px-4">登録</button>
           </form>
 {% endif %}
 {% if tweet.poll_data_on_service %}
@@ -43,6 +43,19 @@
   </div>
 {% endif %}
 {% endfor %}
+
+  <div class="col-12 my-4 d-flex justify-content-end">
+    <form method="POST" action="{% url 'main:register_poll' %}">
+      {% csrf_token %}
+      <div class="input-group">
+        <input name="tweet_id" placeholder="Tweet ID" size="30">
+        <div class="input-group-append">
+          <button type="submit" class="btn btn-primary px-4">登録</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
 </div>
 
 {% endblock %}

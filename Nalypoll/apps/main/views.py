@@ -53,7 +53,7 @@ def me(request):
 
     for tweet in tweets:
         _tweet = Tweet.objects.filter(remote_id=tweet['id']).first()
-        can_register = (_tweet is None and is_poll_open) or _tweet.can_register # no data on server (but have poll) OR
+        can_register = (_tweet is None and is_poll_open) or (_tweet is not None and _tweet.can_register) # no data on server (but have poll) OR
         poll_data_on_service = _tweet is not None and _tweet.polls.count() > 0
 
         poll_ids = tweet.get('attachments', {}).get('poll_ids', [])
@@ -109,7 +109,7 @@ def poll(request, tweet_id: int):
 
 
 @require_http_methods([ 'POST' ])
-def register_poll(request, tweet_id: int):
+def register_poll(request, tweet_id: int = None):
     twitter = TwitterSessionOAuth(request)
     twitter_bearer = TwitterSessionBearer(request)
     current_user = twitter.current_user
@@ -117,23 +117,26 @@ def register_poll(request, tweet_id: int):
     if not twitter.is_authenticated():
         return redirect('main:index')
 
+    if tweet_id is None:
+        tweet_id = request.POST['tweet_id']
+    tweet_id = str(int(tweet_id))
+
+    kwargs = {
+        'remote_id': tweet_id,
+    }
+
     if settings.CAN_REGISTER_SELF_TWEET_ONLY:
-        tweet = Tweet.objects.filter(
-            remote_id=tweet_id,
-            author=current_user,
-        ).first()
-    else:
-        tweet = Tweet.objects.filter(
-            remote_id=tweet_id,
-        ).first()
+        kwargs['author'] = current_user
+
+    tweet = Tweet.objects.filter(**kwargs).first()
 
     if tweet is not None and tweet.registered_user == current_user:
         return redirect('main:poll', tweet_id)
 
     if tweet is None or not tweet.has_poll_log:
-        user_id_filter = [ current_user.remote_id ]
-        if not settings.CAN_REGISTER_SELF_TWEET_ONLY:
-            user_id_filter = []
+        user_id_filter = None
+        if settings.CAN_REGISTER_SELF_TWEET_ONLY:
+            user_id_filter = [ current_user.remote_id ]
 
         tweets = twitter_bearer.update_tweets(
             tweet_ids=[ tweet_id ],
@@ -141,7 +144,7 @@ def register_poll(request, tweet_id: int):
         )
         if len(tweets) == 0:
             # invalid request
-            return HttpResponseBadRequest() # forbidden or badrequest, protected user
+            return HttpResponseBadRequest('Tweet Not Found') # forbidden or badrequest, protected user
 
         tweet = tweets[0]
 
