@@ -59,6 +59,11 @@ class Tweet(models.Model):
     def json(self):
         ret = {
             'id': self.remote_id,
+            'text': self.text,
+            'author': {
+                'name': self.author.name,
+                'screen_name': self.author.screen_name,
+            },
             'posted_at': int(self.remote_created_at.timestamp()),
         }
         return json.dumps(ret, ensure_ascii=False)

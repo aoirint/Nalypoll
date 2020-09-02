@@ -113,7 +113,15 @@ def menu(request):
 def poll(request, tweet_id: int):
     twitter = TwitterSessionOAuth(request)
 
-    tweet = Tweet.objects.filter(remote_id=tweet_id, poll__isnull=False, author__protected=False).distinct().first()
+    if not twitter.is_authenticated():
+        return redirect('main:index')
+
+    tweet = Tweet.objects.filter(
+        remote_id=tweet_id,
+        # author__remote_id=twitter.user_id,
+        poll__isnull=False,
+        # author__protected=False,
+    ).distinct().first()
     if tweet is None:
         raise Http404('Not Found')
 

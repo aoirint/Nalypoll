@@ -31,42 +31,44 @@
     </div>
   </div>
 
-  <div id="chart_polls" class="my-4 py-4 col-12 col-lg-8"></div>
+  <div class="col-12 col-lg-8">
+    <div id="chart_polls"></div>
+    <div class="my-4 d-flex justify-content-end">
+      <button id="download_as_image_button" type="button" class="btn btn-primary">Download as Image</button>
+    </div>
+  </div>
 </div>
 
 <script>
 (function() {
   function timestampSeconds2label(timestampSeconds) {
     let de = new Date(timestampSeconds * 1000);
+    let y = new String(de.getFullYear()).slice(-2);
+    if (y.length == 1) y = '0' + y;
+
+    let mt = new String(de.getMonth() + 1);
+    if (mt.length == 1) mt = '0' + mt;
+
+    let dt = new String(de.getDate());
+    if (dt.length == 1) dt = '0' + dt;
+
     let h = new String(de.getHours());
     if (h.length == 1) h = '0' + h;
 
     let m = new String(de.getMinutes());
     if (m.length == 1) m = '0' + m;
 
-    return h + ':' + m;
+    // let s = new String(de.getSeconds());
+    // if (s.length == 1) s = '0' + s;
+
+    return [
+      y + '/' + mt + '/' + dt,
+      h + ':' + m,
+    ];
   }
 
-  let dataPollsElm = document.querySelector('#data_polls');
-  let tweet = JSON.parse(dataPollsElm.dataset.tweet);
-  let polls = JSON.parse(dataPollsElm.dataset.polls);
-
-  let embedTweetContainer = document.querySelector('#embed_tweet_container');
-  twttr.ready(twttr => {
-    twttr.widgets.createTweet(tweet.id, embedTweetContainer, {
-    }).then(elm => {
-    });
-  });
-
-  let chartPollsElm = document.querySelector('#chart_polls');
-
-  for (let poll of polls) {
-    let chartPollElm = document.createElement('canvas');
-    chartPollElm.width = 1600;
-    chartPollElm.height = 900;
-    chartPollsElm.appendChild(chartPollElm);
-
-    let chartPollCtx = chartPollElm.getContext('2d');
+  function renderChart(poll, canvasElm, completion) {
+    let chartPollCtx = canvasElm.getContext('2d');
 
     let options = Object.keys(poll.votes);
     let timestamps = poll.timestamps;
@@ -85,10 +87,13 @@
     ];
 
     let sampleCount = poll.votes[options[0]].length;
+    // let duration = poll.end_time - tweet.posted_at;
     for (let optionIndex in options) {
       let option = options[optionIndex];
       let votesList = poll.votes[option];
       let data = [];
+
+      // option = '選択肢' + optionIndex;
 
       data.push({
         'x': tweet.posted_at,
@@ -114,19 +119,37 @@
 
       datasets.push({
         'label': option,
+        'lineTension': false, // disable interpolation
         'data': data,
         'backgroundColor': backgroundColors[optionIndex],
         'borderColor': borderColors[optionIndex],
         'borderWidth': 1,
-      })
+      });
     }
 
-    let chartPoll = new Chart(chartPollCtx, {
+    let title = tweet.text.split('\n');
+    title.push('by ' + tweet.author.name + ' (@' + tweet.author.screen_name + ')');
+
+    return new Chart(chartPollCtx, {
       'type': 'line',
       'data': {
         'datasets': datasets,
       },
       'options': {
+        'layout': {
+          'padding': 24,
+        },
+        'title': {
+          'display': true,
+          'fontSize': 24,
+          'text': title,
+        },
+        'legend': {
+          'display': true,
+          'labels': {
+            'fontSize': 18,
+          },
+        },
         'scales': {
           'xAxes': [{
             'type': 'linear',
@@ -138,7 +161,11 @@
               'min': tweet.posted_at,
               'max': poll.end_time,
               'callback': (value, index, values) => {
-                return timestampSeconds2label(value);
+                let lastvalue = values[index - 1];
+                let tick = timestampSeconds2label(value);
+                if (lastvalue && timestampSeconds2label(lastvalue) == tick) return '';
+                console.log(tick);
+                return tick;
               },
             },
           }],
@@ -156,7 +183,7 @@
           'callbacks': {
             'title': (tooltipItems, data) => {
               let timestamp = parseInt(tooltipItems[0].xLabel); // original label
-              let title = timestampSeconds2label(timestamp);
+              let title = timestampSeconds2label(timestamp).join(' ');
 
               return title;
             },
@@ -165,12 +192,131 @@
         'hover': {
           'mode': 'index',
           'intersect': false,
-        }
+        },
+        'animation': {
+          'onComplete': completion,
+        },
+        'responsive': false,
       },
     });
+  }
+
+  // set Chart.js background
+  Chart.pluginService.register({
+    'beforeDraw': c => {
+      let ctx = c.chart.ctx;
+      ctx.fillStyle = 'rgba(255, 255, 255, 1.0)';
+      ctx.fillRect(0, 0, c.chart.width, c.chart.height);
+    }
+  })
+
+
+  let dataPollsElm = document.querySelector('#data_polls');
+  let tweet = JSON.parse(dataPollsElm.dataset.tweet);
+  let polls = JSON.parse(dataPollsElm.dataset.polls);
+
+  // debug
+  /*
+  tweet = {
+    'id': 1301176343590182913,
+    'text': '投票ツイート本文',
+    'author': {
+      'name': 'てすと',
+      'screen_name': 'TOS',
+    },
+  };
+  polls = [
+    {
+      'id': 1,
+      'end_time': 1000,
+      'voting_status': 'open',
+      'votes': {
+        'Option A': [
+          0,
+          10,
+          20,
+          35,
+        ],
+        'Option B': [
+          0,
+          5,
+          15,
+          40,
+        ],
+        'Option C': [
+          0,
+          3,
+          12,
+          28,
+        ],
+        'Option D': [
+          0,
+          8,
+          10,
+          18,
+        ],
+      },
+      'timestamps': [
+        0,
+        250,
+        500,
+        750,
+      ],
+    },
+  ];
+  */
+
+  let embedTweetContainer = document.querySelector('#embed_tweet_container');
+  twttr.ready(twttr => {
+    twttr.widgets.createTweet(tweet.id, embedTweetContainer, {
+    }).then(elm => {
+    });
+  });
+
+  let chartPollsElm = document.querySelector('#chart_polls');
+
+  for (let poll of polls) {
+    let chartPollElm = document.createElement('canvas');
+    chartPollElm.width = 800;
+    chartPollElm.height = 450;
+    chartPollElm.style.width = '100%';
+
+    let chartPoll = renderChart(poll, chartPollElm);
+    chartPollsElm.appendChild(chartPollElm);
 
     break;
   }
+
+  let downloadAsImageButton = document.querySelector('#download_as_image_button');
+  downloadAsImageButton.addEventListener('click', event => {
+    downloadAsImageButton.disabled = true;
+
+    let poll = polls.length > 0 ? polls[0] : null;
+
+    let chartPollElm = document.createElement('canvas');
+    chartPollElm.style.position = 'absolute';
+    chartPollElm.style.display = 'none';
+    chartPollElm.width = chartPollElm.style.width = 800;
+    chartPollElm.height = chartPollElm.style.height = 450;
+
+    document.body.appendChild(chartPollElm);
+
+    let chartPoll = renderChart(poll, chartPollElm, () => {
+      let base64chart = chartPollElm.toDataURL();
+      document.body.removeChild(chartPollElm);
+
+      let hashChartImage = md5(base64chart); // TODO: raw binary hash
+
+      let anchor = document.createElement('a');
+      anchor.download = hashChartImage + '.png';
+      anchor.href = base64chart;
+
+      document.body.appendChild(anchor);
+      anchor.click();
+
+      downloadAsImageButton.disabled = false;
+    });
+  });
 
 })();
 </script>

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 import os
 import sys
+from urllib.parse import urljoin
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -37,13 +38,14 @@ ALLOWED_HOST = os.environ.get('DJANGO_ALLOWED_HOST')
 if ALLOWED_HOST:
     ALLOWED_HOSTS += [ ALLOWED_HOST, ]
 
+HOST_URL = os.environ.get('DJANGO_HOST_URL')
 
 
 # Environments
 TWITTER_TOKEN = os.environ.get('TWITTER_TOKEN')
 TWITTER_API_KEY = os.environ.get('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.environ.get('TWITTER_API_SECRET')
-TWITTER_OAUTH_CALLBACK = os.environ.get('TWITTER_OAUTH_CALLBACK')
+TWITTER_OAUTH_CALLBACK = urljoin(HOST_URL, '/oauth/callback')
 
 CAN_REGISTER_ALL_TWEET = os.environ.get('CAN_REGISTER_ALL_TWEET', '0') == '1'
 
