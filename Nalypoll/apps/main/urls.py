@@ -22,6 +22,7 @@ app_name = 'main'
 urlpatterns = [
     path('', views.index, name='index'),
     path('poll/<int:tweet_id>', views.poll, name='poll'),
+    path('poll/remove/<int:tweet_id>', views.remove_poll, name='remove_poll'),
     # path('update/<int:tweet_id>', views.update, name='update'),
     path('me', views.me, name='me'),
     path('menu', views.menu, name='menu'),

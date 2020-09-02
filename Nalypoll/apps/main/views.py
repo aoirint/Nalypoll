@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.urls import reverse
 from django.http import HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponse, Http404
+from django.views.decorators.http import require_http_methods
 
 import re
 import requests
@@ -131,10 +132,28 @@ def poll(request, tweet_id: int):
         'twitter': twitter,
     })
 
-def remove_user_polls(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
+@require_http_methods([ 'POST' ])
+def remove_poll(request, tweet_id: int):
+    twitter = TwitterSessionOAuth(request)
 
+    if not twitter.is_authenticated():
+        return redirect('main:index')
+
+    tweet = Tweet.objects.filter(
+        remote_id=tweet_id,
+        author__remote_id=twitter.user_id,
+        poll__isnull=False,
+        # author__protected=False,
+    ).distinct().first()
+
+    if tweet is None:
+        return HttpResponseBadRequest()
+
+    tweet.delete()
+    return redirect('main:me')
+
+@require_http_methods([ 'POST' ])
+def remove_user_polls(request):
     twitter = TwitterSessionOAuth(request)
     if not twitter.is_authenticated():
         return HttpResponse('Forbidden', code=403)
@@ -160,11 +179,8 @@ def update(request, tweet_id: int):
 
 
 # start oauth (redirect to twitter.com)
+@require_http_methods([ 'POST' ])
 def oauth(request):
-    if request.method != 'POST':
-        # return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
-        return redirect('main:index') # Method Not Allowed
-
     twitter = TwitterSessionOAuth(request)
     try:
         response = twitter.start_oauth()
@@ -186,10 +202,8 @@ def oauth_callback(request):
     return redirect('main:me')
 
 # remove tokens from DB
+@require_http_methods([ 'POST' ])
 def oauth_remove(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
-
     twitter = TwitterSessionOAuth(request)
 
     response = redirect('main:index')
@@ -198,10 +212,8 @@ def oauth_remove(request):
     return response
 
 # remove tokens from user session
+@require_http_methods([ 'POST' ])
 def oauth_logout(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed([ 'POST', ], content='Method Not Allowed')
-
     twitter = TwitterSessionOAuth(request)
 
     response = redirect('main:index')
