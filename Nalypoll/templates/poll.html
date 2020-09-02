@@ -25,7 +25,7 @@
 {% endif %}
       </div>
       <div class="col-12">
-        <div id="embed_tweet_container"></div>
+        <div id="embed_tweet_container" class="d-flex justify-content-center"></div>
       </div>
     </div>
   </div>
@@ -201,7 +201,6 @@
                 let lastvalue = values[index - 1];
                 let tick = timestampSeconds2label(value);
                 if (lastvalue && timestampSeconds2label(lastvalue) == tick) return '';
-                console.log(tick);
                 return tick;
               },
             },

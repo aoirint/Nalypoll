@@ -60,6 +60,10 @@ class Tweet(models.Model):
         return self.registered_user is not None
 
     @property
+    def can_register(self):
+        return self.registered_user is None and self.is_poll_open
+
+    @property
     def has_poll_log(self):
         return self.polls.count() > 0
 

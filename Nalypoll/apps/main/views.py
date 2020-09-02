@@ -42,21 +42,24 @@ def me(request):
     users: List[Dict] = includes.get('users', [])
     userid2user: Dict[str, Dict] = { user['id']: user for user in users }
 
+    is_poll_open = False
     for poll in polls:
         poll['total_votes'] = sum([ option['votes'] for option in poll['options'] ])
+        is_poll_open = is_poll_open or poll['voting_status'] == 'open'
+
         for option in poll['options']:
             option['rate'] = option['votes'] / poll['total_votes'] if poll['total_votes'] != 0 else 0.0
             option['percentage'] = option['rate'] * 100
 
     for tweet in tweets:
         _tweet = Tweet.objects.filter(remote_id=tweet['id']).first()
-        registered = _tweet is not None and _tweet.registered_user == current_user
+        can_register = (_tweet is None and is_poll_open) or _tweet.can_register # no data on server (but have poll) OR
         poll_data_on_service = _tweet is not None and _tweet.polls.count() > 0
 
         poll_ids = tweet.get('attachments', {}).get('poll_ids', [])
         tweet['author'] = userid2user[tweet['author_id']]
         tweet['polls'] = [ pollid2poll[poll_id] for poll_id in poll_ids ]
-        tweet['registered'] = registered
+        tweet['can_register'] = can_register
         tweet['poll_data_on_service'] = poll_data_on_service
 
     return render(request, 'me.html', {

@@ -231,6 +231,9 @@ class TwitterSession:
         for _tweet in _tweets:
             is_open = tweetid2open[_tweet.remote_id]
             _tweet.is_poll_open = is_open
+            if not _tweet.is_poll_open:
+                _tweet.registered_user = None # auto unregister
+
             _tweet.save()
 
         return _polls
@@ -299,7 +302,6 @@ class TwitterSession:
 
 
     # TODO: to use shared task pool (to reduce API call)
-    # TODO: scheduled data updater
     def update_tweets(self,
         tweet_ids: List[str],
         user_id_filter: List[str] = None,
