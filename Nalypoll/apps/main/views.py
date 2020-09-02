@@ -87,12 +87,16 @@ def poll(request, tweet_id: int):
     if not twitter.is_authenticated():
         return redirect('main:index')
 
-    tweet = Tweet.objects.filter(
-        remote_id=tweet_id,
-        author=current_user,
-        poll__isnull=False,
-        # author__protected=False,
-    ).distinct().first()
+    kwargs = {
+        'remote_id': tweet_id,
+        'poll__isnull': False,
+        # 'author__protected': False,
+    }
+
+    if settings.CAN_REGISTER_SELF_TWEET_ONLY:
+        kwargs['author'] = current_user
+
+    tweet = Tweet.objects.filter(**kwargs).distinct().first()
 
     if tweet is None:
         raise Http404('Not Found')
@@ -113,7 +117,7 @@ def register_poll(request, tweet_id: int):
     if not twitter.is_authenticated():
         return redirect('main:index')
 
-    if not settings.CAN_REGISTER_ALL_TWEET:
+    if settings.CAN_REGISTER_SELF_TWEET_ONLY:
         tweet = Tweet.objects.filter(
             remote_id=tweet_id,
             author=current_user,
@@ -128,7 +132,7 @@ def register_poll(request, tweet_id: int):
 
     if tweet is None or not tweet.has_poll_log:
         user_id_filter = [ current_user.remote_id ]
-        if settings.CAN_REGISTER_ALL_TWEET:
+        if not settings.CAN_REGISTER_SELF_TWEET_ONLY:
             user_id_filter = []
 
         tweets = twitter_bearer.update_tweets(

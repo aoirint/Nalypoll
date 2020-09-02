@@ -47,7 +47,7 @@ TWITTER_API_KEY = os.environ.get('TWITTER_API_KEY')
 TWITTER_API_SECRET = os.environ.get('TWITTER_API_SECRET')
 TWITTER_OAUTH_CALLBACK = urljoin(HOST_URL, '/oauth/callback')
 
-CAN_REGISTER_ALL_TWEET = os.environ.get('CAN_REGISTER_ALL_TWEET', '0') == '1'
+CAN_REGISTER_SELF_TWEET_ONLY = os.environ.get('CAN_REGISTER_SELF_TWEET_ONLY', '1') == '1'
 
 
 # Application definition
