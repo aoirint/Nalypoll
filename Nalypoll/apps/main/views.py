@@ -110,10 +110,15 @@ def register_poll(request, tweet_id: int):
     if not twitter.is_authenticated():
         return redirect('main:index')
 
-    tweet = Tweet.objects.filter(
-        remote_id=tweet_id,
-        author=current_user,
-    ).first()
+    if not settings.CAN_REGISTER_ALL_TWEET:
+        tweet = Tweet.objects.filter(
+            remote_id=tweet_id,
+            author=current_user,
+        ).first()
+    else:
+        tweet = Tweet.objects.filter(
+            remote_id=tweet_id,
+        ).first()
 
     if tweet is not None and tweet.registered_user == current_user:
         return redirect('main:poll', tweet_id)
