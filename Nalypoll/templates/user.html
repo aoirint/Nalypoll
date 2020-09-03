@@ -61,7 +61,7 @@
     <form method="POST" action="{% url 'main:register_poll' %}">
       {% csrf_token %}
       <div class="input-group">
-        <input name="tweet_id" placeholder="Tweet ID" size="30">
+        <input name="tweet_id_or_url" placeholder="Tweet ID or URL" size="30">
         <div class="input-group-append">
           <button type="submit" class="btn btn-primary px-4">登録</button>
         </div>

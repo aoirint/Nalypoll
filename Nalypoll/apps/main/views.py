@@ -124,7 +124,13 @@ def register_poll(request, tweet_id: int = None):
         return redirect('main:index')
 
     if tweet_id is None:
-        tweet_id = request.POST['tweet_id']
+        tweet_id_or_url = request.POST['tweet_id_or_url']
+
+        m = TWEET_ID_OR_URL_PATTERN.match(tweet_id_or_url)
+        tweet_id = m.group('id') or m.group('id_in_url')
+        if tweet_id is None:
+            return HttpResponseBadRequest('Invalid tweet ID or URL')
+
     tweet_id = str(int(tweet_id))
 
     kwargs = {
