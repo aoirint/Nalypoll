@@ -459,30 +459,45 @@
 
   let barchartraceButton = document.querySelector('#barchartrace_button')
   barchartraceButton.addEventListener('click', (e) => {
-    barchartraceButton.style.opacity = '0';
     startBarChartRace(() => {
-      barchartraceButton.style.opacity = '1';
+      barchartraceButton.style.opacity = '0';
     });
   });
-  function startBarChartRace(onFinished) {
+  function startBarChartRace(onStart) {
     let duration = 20;
     let topN = Object.keys(polls[0].votes).length;
     let tickDuration = duration / barChartRaceData.length * 1000;
 
-    if (barChartRaceInterval) {
-      barChartRaceInterval.stop();
-    }
+    stopBarChartRace();
 
-    barChartRaceInterval = createBarChartRace(barChartRaceData, topN, tickDuration,
+    if (onStart) onStart();
+
+    let cloneData = barChartRaceData.map(obj => Object.assign(new Object(), obj));
+
+    barChartRaceInterval = createBarChartRace(cloneData, topN, tickDuration,
       // onGraphUpdated
       (svg) => {
       },
       // onFinished
       () => {
-        if (onFinished) onFinished();
+        stopBarChartRace();
       },
     ); // #chartDiv
   }
+  function stopBarChartRace() {
+    if (! barChartRaceInterval) return;
+
+    barchartraceButton.style.opacity = '1';
+    barChartRaceInterval.stop();
+    barChartRaceInterval = null;
+  }
+
+  window.addEventListener('resize', function() {
+    // let restart = barChartRaceInterval != null;
+
+    stopBarChartRace();
+    startBarChartRace();
+  });
 
 </script>
 
