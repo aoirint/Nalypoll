@@ -39,11 +39,11 @@ def user(request):
     if not twitter.is_authenticated():
         return redirect('main:index')
 
-    closed_poll_tweets = Tweet.objects.filter(author=current_user, is_poll_open=False, poll__isnull=False).distinct().all()
+    # closed_poll_tweets = Tweet.objects.filter(author=current_user, is_poll_open=False, poll__isnull=False).distinct().all()
     registering_tweets = Tweet.objects.filter(registered_user=current_user).all()
 
     return render(request, 'user.html', {
-        'closed_poll_tweets': closed_poll_tweets,
+        # 'closed_poll_tweets': closed_poll_tweets,
         'registering_tweets': registering_tweets,
         'twitter': twitter,
     })
