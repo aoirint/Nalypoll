@@ -16,6 +16,12 @@ from validateutil import TWEET_ID_OR_URL_PATTERN
 from main.models import *
 from main.forms import *
 
+class BadRequestException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
+
 # Create your views here.
 def index(request):
     twitter = TwitterSessionOAuth(request)
@@ -138,15 +144,21 @@ def register_poll(request, tweet_id: int = None):
         if settings.CAN_REGISTER_SELF_TWEET_ONLY:
             user_id_filter = [ current_user.remote_id ]
 
-        tweets = twitter_bearer.update_tweets(
-            tweet_ids=[ tweet_id ],
-            user_id_filter=user_id_filter,
-        )
-        if len(tweets) == 0:
-            # invalid request
-            return HttpResponseBadRequest('Tweet Not Found') # forbidden or badrequest, protected user
+        try:
+            with transaction.atomic():
+                tweets = twitter_bearer.update_tweets(
+                    tweet_ids=[ tweet_id ],
+                    user_id_filter=user_id_filter,
+                )
+                if len(tweets) == 0:
+                    raise BadRequestException('Tweet Not Found') # forbidden or badrequest, protected user
 
-        tweet = tweets[0]
+                tweet = tweets[0]
+                if tweet.polls.count() == 0:
+                    raise BadRequestException('Poll Not Found')
+
+        except BadRequestException as err:
+            return HttpResponseBadRequest(err.message)
 
     assert tweet is not None
     tweet.registered_user = current_user
