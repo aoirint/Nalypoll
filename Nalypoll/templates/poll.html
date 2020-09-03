@@ -40,7 +40,7 @@
 
   <div class="my-4 col-12 col-lg-8 d-flex flex-column">
     <div class="flex-grow-1 m-lg-2 d-flex justify-content-center align-items-center">
-      <div id="chart_polls" class="embed-responsive embed-responsive-16by9"></div>
+      <div id="chart_polls"></div>
     </div>
 
     <div>
@@ -374,7 +374,7 @@
     chartPollElm = document.createElement('canvas');
     chartPollElm.width = 800 * chartScaleRate;
     chartPollElm.height = 450 * chartScaleRate;
-    chartPollElm.classList.add('embed-responsive-item');
+    chartPollElm.style.width = '100%';
 
     let chartPoll = renderChart(poll, chartPollElm);
     chartPollsElm.appendChild(chartPollElm);
