@@ -25,7 +25,7 @@ def index(request):
     })
 
 # show recent tweets
-def me(request):
+def user(request):
     twitter = TwitterSessionOAuth(request)
     twitter_bearer = TwitterSessionBearer(request)
     current_user = twitter.current_user
@@ -62,19 +62,19 @@ def me(request):
         tweet['can_register'] = can_register
         tweet['poll_data_on_service'] = poll_data_on_service
 
-    return render(request, 'me.html', {
+    return render(request, 'user.html', {
         'tweets': tweets,
         'twitter': twitter,
     })
 
 # user menu
-def menu(request):
+def user_menu(request):
     twitter = TwitterSessionOAuth(request)
 
     if not twitter.is_authenticated():
         return redirect('main:index')
 
-    return render(request, 'menu.html', {
+    return render(request, 'user_menu.html', {
         'twitter': twitter,
     })
 
@@ -192,10 +192,24 @@ def remove_poll(request, tweet_id: int):
         return HttpResponseBadRequest()
 
     tweet.delete()
-    return redirect('main:me')
+    return redirect('main:user')
 
 @require_http_methods([ 'POST' ])
-def remove_user_polls(request):
+def user_unregister_polls(request):
+    twitter = TwitterSessionOAuth(request)
+    if not twitter.is_authenticated():
+        return HttpResponse('Forbidden', code=403)
+
+    current_user = twitter.current_user
+
+    for tweet in Tweet.objects.filter(registered_user=current_user):
+        tweet.registered_user = None
+        tweet.save()
+
+    return redirect('main:user_menu')
+
+@require_http_methods([ 'POST' ])
+def user_remove_polls(request):
     twitter = TwitterSessionOAuth(request)
     if not twitter.is_authenticated():
         return HttpResponse('Forbidden', code=403)
@@ -208,7 +222,7 @@ def remove_user_polls(request):
         tweet.registered_user = None
         tweet.save()
 
-    return redirect('main:menu')
+    return redirect('main:user_menu')
 
 # temporary
 # def update(request, tweet_id: int):
@@ -243,7 +257,7 @@ def oauth_callback(request):
         print(err)
         return HttpResponse('Token request to Twitter failed with code %d.' % err.status_code, status=400)
 
-    return redirect('main:me')
+    return redirect('main:user')
 
 # remove tokens from DB
 @require_http_methods([ 'POST' ])
