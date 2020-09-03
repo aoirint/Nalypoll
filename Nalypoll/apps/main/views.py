@@ -227,6 +227,7 @@ def oauth(request):
     try:
         response = twitter.start_oauth()
     except requests_oauthlib.oauth1_session.TokenRequestDenied as err:
+        print(err)
         return HttpResponse('Token request to Twitter failed with code %d.' % err.status_code, status=400)
 
     return response
@@ -239,6 +240,7 @@ def oauth_callback(request):
         twitter.on_oauth_callback()
     except requests_oauthlib.oauth1_session.TokenRequestDenied as err:
         # Token request failed with code 401, response was '現在この機能は一時的にご利用いただけません'
+        print(err)
         return HttpResponse('Token request to Twitter failed with code %d.' % err.status_code, status=400)
 
     return redirect('main:me')
