@@ -15,7 +15,7 @@
 <div class="row mx-lg-5">
   <div class="col-12">
     <div class="alert alert-danger">
-      このページはあなただけが見ることができます。共有する場合はスクリーンショットや画像をご利用ください。
+      このページはあなただけが見ることができます。共有する場合はスクリーンショットや画面収録、画像をご利用ください。
     </div>
   </div>
 
@@ -38,8 +38,15 @@
     </div>
   </div>
 
-  <div class="col-12 col-lg-8">
-    <div id="chart_polls"></div>
+  <div class="my-4 col-12 col-lg-8">
+    <div class="vh-100 h-lg-auto d-flex justify-content-center align-items-center">
+      <div id="chart_container" class="card">
+        <div class="card-body w-100 h-100">
+          <div id="chart_polls" class="w-100 h-100"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="my-4 d-flex justify-content-end">
       <button id="download_as_image_button" type="button" class="btn btn-primary" title="PNG画像としてダウンロード">
         画像としてダウンロード
@@ -360,13 +367,18 @@
     });
   });
 
+  let chartContainer = document.querySelector('#chart_container');
   let chartPollsElm = document.querySelector('#chart_polls');
+  let chartPollElm = null;
 
   for (let poll of polls) {
-    let chartPollElm = document.createElement('canvas');
+    setResponsiveSize(chartContainer.parentElement, chartContainer, 16/9);
+
+    chartPollElm = document.createElement('canvas');
     chartPollElm.width = 800 * chartScaleRate;
     chartPollElm.height = 450 * chartScaleRate;
     chartPollElm.style.width = '100%';
+    chartPollElm.style.height = '100%';
 
     let chartPoll = renderChart(poll, chartPollElm);
     chartPollsElm.appendChild(chartPollElm);
@@ -498,8 +510,31 @@
     barChartRaceInterval = null;
   }
 
+  function setResponsiveSize(container, element, wphRatio) {
+    let style = getComputedStyle(container);
+    let w = container.clientWidth - parseFloat(style.paddiingLeft || 0) - parseFloat(style.paddingRight || 0);
+    let h = container.clientHeight - parseFloat(style.paddiingTop || 0) - parseFloat(style.paddingBottom || 0);
+
+    if (! wphRatio) wphRatio = element.clientWidth / element.clientHeight;
+
+    let nw = w;
+    let nh = h;
+    if (w < h) {
+      nh = Math.min(h, w / wphRatio);
+      nw = nh * wphRatio;
+    }
+    else {
+      nw = Math.min(w, h * wphRatio);
+      nh = nw / wphRatio;
+    }
+
+    element.style.width  = nw + 'px';
+    element.style.height = nh + 'px';
+  }
+
   window.addEventListener('resize', function() {
     // let restart = barChartRaceInterval != null;
+    setResponsiveSize(chartContainer.parentElement, chartContainer, 16/9);
 
     stopBarChartRace();
     startBarChartRace();
