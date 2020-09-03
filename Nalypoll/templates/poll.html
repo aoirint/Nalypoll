@@ -88,11 +88,20 @@
   <div class="col-12 d-flex align-items-center p-2" style="height: 100vh;">
     <div class="card w-100 h-100">
       <div class="card-body d-flex flex-column">
-        <h5 class="card-title">
-          {{ tweet.text_unescaped }}
-          <br>
-          by {{ tweet.author.name }} (@{{ tweet.author.screen_name }})
-        </h5>
+        <div class="d-flex justify-content-between">
+          <h5 class="card-title">
+            {{ tweet.text_unescaped }}
+            <br>
+            by {{ tweet.author.name }} (@{{ tweet.author.screen_name }})
+          </h5>
+          <div class="ml-2">
+            <button id="barchartrace_button" type="button" class="btn btn-primary"
+              style="white-space: nowrap; outline:none !important; box-shadow: none !important;"
+              onclick="startBarChartRace();">
+              再生
+            </button>
+          </div>
+        </div>
         <div class="h-100">
           <div id="chartDiv" class="w-100 h-100"></div>
         </div>
@@ -104,7 +113,6 @@
 
 
 <script>
-(function() {
   let chartScaleRate = 1.6; // 1280x720
 
   Chart.defaults.global.defaultFontSize = 12 * chartScaleRate;
@@ -433,94 +441,49 @@
   });
 
 
+  let barChartRaceData = null;
+  let barChartRaceInterval = null;
+  (function() {
+    let csvText = createCSV();
+    Papa.parse(csvText, {
+      'header': false,
+      'skipEmptyLines': true,
+      'complete': (results) => {
+        results.data = reshapeBarChartRaceData(results.data);
 
-  /*
-  function renderSvg(canvas, svg) {
-    let svgData = new XMLSerializer().serializeToString(svg);
+        barChartRaceData = JSON.parse(JSON.stringify(results.data));
+        startBarChartRace();
+      },
+    });
+  })();
 
-    let image = new Image();
-    image.onload = () => {
-      let ctx = canvas.getContext('2d');
+  let barchartraceButton = document.querySelector('#barchartrace_button')
+  barchartraceButton.addEventListener('click', (e) => {
+    barchartraceButton.style.opacity = '0';
+    startBarChartRace(() => {
+      barchartraceButton.style.opacity = '1';
+    });
+  });
+  function startBarChartRace(onFinished) {
+    let duration = 20;
+    let topN = Object.keys(polls[0].votes).length;
+    let tickDuration = duration / barChartRaceData.length * 1000;
 
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (barChartRaceInterval) {
+      barChartRaceInterval.stop();
+    }
 
-      ctx.drawImage(image, 0, 0);
-    };
-    image.src = 'data:image/svg+xml;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+    barChartRaceInterval = createBarChartRace(barChartRaceData, topN, tickDuration,
+      // onGraphUpdated
+      (svg) => {
+      },
+      // onFinished
+      () => {
+        if (onFinished) onFinished();
+      },
+    ); // #chartDiv
   }
-  */
 
-
-  let duration = 20;
-  let csvText = createCSV();
-  Papa.parse(csvText, {
-    'header': false,
-    'skipEmptyLines': true,
-    'complete': (results) => {
-      results.data = reshapeBarChartRaceData(results.data);
-
-      let csvData = JSON.parse(JSON.stringify(results.data));
-      let topN = Object.keys(polls[0].votes).length;
-
-      let tickDuration = duration / csvData.length * 1000;
-
-      // let firstFrame = true;
-
-      // let canvas = document.createElement('canvas');
-      // document.body.appendChild(canvas);
-
-      // let chunks = [];
-      // let capStream, recorder;
-
-      let bcrInterval = createBarChartRace(csvData, topN, tickDuration,
-        // onGraphUpdated
-        (svg) => {
-          /*
-          renderSvg(canvas, svg);
-
-          if (firstFrame) {
-            canvas.width = svg.width.baseVal.value;
-            canvas.height = svg.height.baseVal.value;
-
-            // 没、おそい
-            capStream = canvas.captureStream(30);
-            recorder = new MediaRecorder(capStream);
-            recorder.start();
-            recorder.ondataavailable = e => {
-              chunks.push(e.data);
-            };
-            recorder.onstop = e => {
-              let blob = new Blob(chunks, { 'type': 'video/webm', });
-              let reader = new FileReader();
-              reader.readAsDataURL(blob);
-              reader.onloadend = () => {
-                let dataUrl = reader.result;
-
-                let anchor = document.createElement('a');
-                anchor.download = 'hash.webm';
-                anchor.href = dataUrl;
-
-                document.body.appendChild(anchor);
-                anchor.click();
-                document.body.removeChild(anchor);
-              };
-            };
-
-            firstFrame = false;
-          }
-          */
-        },
-        // onFinished
-        () => {
-          // recorder.stop();
-        },
-      ); // #chartDiv
-    },
-  })
-
-
-})();
 </script>
 
 {% endblock %}
