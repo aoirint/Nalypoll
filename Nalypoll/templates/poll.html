@@ -445,6 +445,7 @@
 
   let barChartRaceData = null;
   let barChartRaceInterval = null;
+  let barChartRaceButtonShowTimeout = null;
   (function() {
     let csvText = createCSV();
     Papa.parse(csvText, {
@@ -471,6 +472,7 @@
     let tickDuration = duration / barChartRaceData.length * 1000;
 
     stopBarChartRace();
+    clearTimeout(barChartRaceButtonShowTimeout);
 
     if (onStart) onStart();
 
@@ -489,7 +491,9 @@
   function stopBarChartRace() {
     if (! barChartRaceInterval) return;
 
-    barchartraceButton.style.opacity = '1';
+    barChartRaceButtonShowTimeout = setTimeout(() => {
+      barchartraceButton.style.opacity = '1';
+    }, 2000);
     barChartRaceInterval.stop();
     barChartRaceInterval = null;
   }

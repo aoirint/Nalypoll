@@ -217,6 +217,7 @@ def user_remove_polls(request):
     current_user = twitter.current_user
 
     Poll.objects.filter(tweet__author=current_user).delete()
+    # Poll.objects.filter(tweet__registered_user=current_user).delete()
 
     for tweet in Tweet.objects.filter(registered_user=current_user):
         tweet.registered_user = None
