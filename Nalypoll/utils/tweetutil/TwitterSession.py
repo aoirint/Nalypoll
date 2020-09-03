@@ -228,13 +228,12 @@ class TwitterSession:
                 )
                 _opt.save()
 
-        # for _tweet in _tweets:
-        #     is_open = tweetid2open[_tweet.remote_id]
-        #     _tweet.is_poll_open = is_open
-        #     if not _tweet.is_poll_open:
-        #         _tweet.registered_user = None # auto unregister
-        #
-        #     _tweet.save()
+        for _tweet in _tweets:
+            is_open = tweetid2open[_tweet.remote_id]
+            _tweet.is_poll_open = is_open
+            # if not _tweet.is_poll_open:
+            #     _tweet.registered_user = None # auto unregister
+            _tweet.save()
 
         return _polls
 
