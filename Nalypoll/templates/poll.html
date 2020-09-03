@@ -49,8 +49,8 @@
       </button>
     </div>
 
-    <div class="my-4 d-flex justify-content-end">
 {% if tweet.registered %}
+    <div class="my-4 d-flex justify-content-end">
       <form id="unregister_form" method="POST" action="{% url 'main:unregister_poll' tweet.remote_id %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger"
@@ -59,7 +59,9 @@
           登録を解除
         </button>
       </form>
-{% else %}
+    </div>
+{% elif tweet.can_register %}
+    <div class="my-4 d-flex justify-content-end">
       <form id="register_form" method="POST" action="{% url 'main:register_poll' tweet.remote_id %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-success"
@@ -68,8 +70,8 @@
           ツイートを登録
         </button>
       </form>
-{% endif %}
     </div>
+{% endif %}
 
     <div class="my-4 d-flex justify-content-end">
       <form id="delete_form" method="POST" action="{% url 'main:remove_poll' tweet.remote_id %}">
