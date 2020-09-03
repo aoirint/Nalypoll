@@ -375,6 +375,7 @@
     chartPollElm.width = 800 * chartScaleRate;
     chartPollElm.height = 450 * chartScaleRate;
     chartPollElm.style.width = '100%';
+    chartPollElm.classList.add('mobile-landscape-fill-height');
 
     let chartPoll = renderChart(poll, chartPollElm);
     chartPollsElm.appendChild(chartPollElm);
