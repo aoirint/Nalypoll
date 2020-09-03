@@ -4,6 +4,56 @@
 {% block pagetitle %}マイページ - Nalypoll{% endblock %}
 
 {% block main %}
+
+<h2 class="mt-4">登録した投票ツイート</h2>
+
+<div class="row">
+{% for tweet in registering_tweets %}
+  <div class="col-12 col-md-6 col-lg-4 my-2">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="https://twitter.com/{{ tweet.author.screen_name }}/status/{{ tweet.remote_id }}" target="_blank">
+            {{ tweet.text }}
+          </a>
+        </h5>
+        <h6 class="small text-secondary mb-3">
+          <a href="https://twitter.com/{{ tweet.author.screen_name }}" target="_blank">
+            {{ tweet.author.name }} (@{{ tweet.author.screen_name }})
+          </a>
+        </h6>
+
+{% for poll in tweet.last_polls %}
+        <ul class="list-group my-4">
+{% for option in poll.options %}
+          <li class="list-group-item">{{ option.label }} ({{ option.votes }}票, {{ option.percentage |floatformat:-2 }}%)
+{% endfor %}
+        </ul>
+{% endfor %}
+
+        <div class="d-flex justify-content-between">
+{% if tweet.is_poll_open %}
+          <div class="alert alert-primary my-0 py-0 d-flex align-items-center">
+            投票受付中
+          </div>
+{% else %}
+          <div class="alert alert-success my-0 py-0 d-flex align-items-center">
+            投票終了
+          </div>
+{% endif %}
+
+          <div class="d-flex justify-content-end">
+            <a href="{% url 'main:poll' tweet.remote_id %}" class="btn btn-secondary ml-4 px-4">確認</a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
 <h2 class="mt-4">最近の投票ツイート</h2>
 
 <div class="row">
@@ -17,13 +67,18 @@
             {{ tweet.text }}
           </a>
         </h5>
-        <h6 class="small text-secondary mb-3">{{ tweet.author.name }} (@{{ tweet.author.username }})</h6>
+        <h6 class="small text-secondary mb-3">
+          <a href="https://twitter.com/{{ tweet.author.username }}" target="_blank">
+            {{ tweet.author.name }} (@{{ tweet.author.username }})
+          </a>
+        </h6>
 {% for poll in tweet.polls %}
         <ul class="list-group my-4">
 {% for option in poll.options %}
           <li class="list-group-item">{{ option.label }} ({{ option.votes }}票, {{ option.percentage |floatformat:-2 }}%)
 {% endfor %}
         </ul>
+{% endfor %}
 
         <div class="d-flex justify-content-between">
 {% if tweet.polls.0.voting_status == 'open' %}
@@ -49,7 +104,6 @@
           </div>
 
         </div>
-{% endfor %}
 
       </div>
     </div>

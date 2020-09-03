@@ -68,8 +68,12 @@ def user(request):
         tweet['can_register'] = can_register
         tweet['poll_data_on_service'] = poll_data_on_service
 
+
+    registering_tweets = Tweet.objects.filter(registered_user=current_user).all()
+
     return render(request, 'user.html', {
         'tweets': tweets,
+        'registering_tweets': registering_tweets,
         'twitter': twitter,
     })
 
