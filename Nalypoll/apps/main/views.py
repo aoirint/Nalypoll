@@ -30,8 +30,26 @@ def index(request):
         'twitter': twitter,
     })
 
-# show recent tweets
+
 def user(request):
+    twitter = TwitterSessionOAuth(request)
+    twitter_bearer = TwitterSessionBearer(request)
+    current_user = twitter.current_user
+
+    if not twitter.is_authenticated():
+        return redirect('main:index')
+
+    closed_poll_tweets = Tweet.objects.filter(author=current_user, is_poll_open=False, poll__isnull=False).distinct().all()
+    registering_tweets = Tweet.objects.filter(registered_user=current_user).all()
+
+    return render(request, 'user.html', {
+        'closed_poll_tweets': closed_poll_tweets,
+        'registering_tweets': registering_tweets,
+        'twitter': twitter,
+    })
+
+# show recent tweets
+def user_recent(request):
     twitter = TwitterSessionOAuth(request)
     twitter_bearer = TwitterSessionBearer(request)
     current_user = twitter.current_user
@@ -69,11 +87,8 @@ def user(request):
         tweet['poll_data_on_service'] = poll_data_on_service
 
 
-    registering_tweets = Tweet.objects.filter(registered_user=current_user).all()
-
-    return render(request, 'user.html', {
+    return render(request, 'user_recent.html', {
         'tweets': tweets,
-        'registering_tweets': registering_tweets,
         'twitter': twitter,
     })
 

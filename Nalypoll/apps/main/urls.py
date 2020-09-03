@@ -28,6 +28,7 @@ urlpatterns = [
     path('poll/remove/<int:tweet_id>', views.remove_poll, name='remove_poll'),
     # path('update/<int:tweet_id>', views.update, name='update'),
     path('user', views.user, name='user'),
+    path('user/recent', views.user_recent, name='user_recent'),
     path('user/menu', views.user_menu, name='user_menu'),
     path('user/menu/polls/remove', views.user_remove_polls, name='user_remove_polls'),
     path('user/menu/polls/unregister', views.user_unregister_polls, name='user_unregister_polls'),

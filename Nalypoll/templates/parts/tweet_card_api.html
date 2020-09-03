@@ -1,0 +1,52 @@
+
+{% if tweet.attachments.poll_ids %}
+  <div class="col-12 col-md-6 col-lg-4 my-2">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="https://twitter.com/{{ tweet.author.username }}/status/{{ tweet.id }}" target="_blank">
+            {{ tweet.text }}
+          </a>
+        </h5>
+        <h6 class="small text-secondary mb-3">
+          <a href="https://twitter.com/{{ tweet.author.username }}" target="_blank">
+            {{ tweet.author.name }} (@{{ tweet.author.username }})
+          </a>
+        </h6>
+{% for poll in tweet.polls %}
+        <ul class="list-group my-4">
+{% for option in poll.options %}
+          <li class="list-group-item">{{ option.label }} ({{ option.votes }}票, {{ option.percentage |floatformat:-2 }}%)
+{% endfor %}
+        </ul>
+{% endfor %}
+
+        <div class="d-flex justify-content-between">
+{% if tweet.polls.0.voting_status == 'open' %}
+          <div class="alert alert-primary my-0 d-flex align-items-center" style="padding-top: .375rem; padding-bottom: .375rem;">
+            投票受付中
+          </div>
+{% else %}
+          <div class="alert alert-success my-0 d-flex align-items-center" style="padding-top: .375rem; padding-bottom: .375rem;">
+            投票終了
+          </div>
+{% endif %}
+
+          <div class="d-flex justify-content-end">
+{% if tweet.can_register %}
+            <form method="POST" action="{% url 'main:register_poll' tweet.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary px-4">登録</button>
+            </form>
+{% endif %}
+{% if tweet.poll_data_on_service %}
+            <a href="{% url 'main:poll' tweet.id %}" class="btn btn-secondary ml-4 px-4">確認</a>
+{% endif %}
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}

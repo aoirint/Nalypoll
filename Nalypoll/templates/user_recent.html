@@ -21,23 +21,17 @@
     </form>
   </div>
   <div class="col-12 d-flex justify-content-end">
-    <a href="{% url 'main:user_recent' %}" class="btn btn-primary">最近のツイートから登録</a>
+    <a href="{% url 'main:user' %}" class="btn btn-secondary">登録したツイートを確認</a>
   </div>
 </div>
 
-<h2 class="mt-4">登録した投票ツイート</h2>
-<div class="row">
-{% for tweet in registering_tweets %}
-{% include 'parts/tweet_card_db.html' %}
-{% endfor %}
-</div>
-
-<h2 class="mt-4">終了した投票ツイート</h2>
+<h2 class="mt-4">最近の投票ツイート</h2>
 
 <div class="row">
-{% for tweet in closed_poll_tweets %}
-{% include 'parts/tweet_card_db.html' %}
+{% for tweet in tweets %}
+{% include 'parts/tweet_card_api.html' %}
 {% endfor %}
+
 </div>
 
 {% endblock %}
