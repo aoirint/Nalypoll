@@ -105,7 +105,7 @@ def poll(request, tweet_id: int):
     tweet = Tweet.objects.filter(**kwargs).distinct().first()
 
     if tweet is None:
-        raise Http404('Not Found')
+        return HttpResponse('Tweet Not Found or No Permission', status=403) # forbidden or badrequest, protected user
 
     return render(request, 'poll.html', {
         'tweet_id': tweet_id,
@@ -151,11 +151,11 @@ def register_poll(request, tweet_id: int = None):
                     user_id_filter=user_id_filter,
                 )
                 if len(tweets) == 0:
-                    raise BadRequestException('Tweet Not Found') # forbidden or badrequest, protected user
+                    raise BadRequestException('Tweet Not Found or No Permission') # forbidden or badrequest, protected user
 
                 tweet = tweets[0]
-                if tweet.polls.count() == 0:
-                    raise BadRequestException('Poll Not Found')
+                if not tweet.is_poll_open:
+                    raise BadRequestException('Open Poll Not Found')
 
         except BadRequestException as err:
             return HttpResponseBadRequest(err.message)
