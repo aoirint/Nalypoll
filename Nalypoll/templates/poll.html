@@ -308,41 +308,42 @@
   let tweet = JSON.parse(replaceEntities(dataPollsElm.dataset.tweet));
   let polls = JSON.parse(replaceEntities(dataPollsElm.dataset.polls));
 
+{% comment %}
   // debug
-  /*
   tweet = {
-    'id': 1301176343590182913,
-    'text': '投票ツイート本文',
+    'id': 0,
+    'text': 'あなたの投票',
     'author': {
-      'name': 'てすと',
+      'name': 'あなた',
       'screen_name': 'TOS',
     },
+    'posted_at': 1598922000,
   };
   polls = [
     {
       'id': 1,
-      'end_time': 1000,
+      'end_time': 1598922000 + 24*60*60,
       'voting_status': 'open',
       'votes': {
-        'Option A': [
+        'すごくすき': [
           0,
           10,
           20,
           35,
         ],
-        'Option B': [
+        'すき': [
           0,
           5,
           15,
           40,
         ],
-        'Option C': [
+        'きらい': [
           0,
           3,
           12,
           28,
         ],
-        'Option D': [
+        'すごくきらい': [
           0,
           8,
           10,
@@ -350,14 +351,14 @@
         ],
       },
       'timestamps': [
-        0,
-        250,
-        500,
-        750,
+        1598922000 + 0*60*60,
+        1598922000 + 4*60*60,
+        1598922000 + 8*60*60,
+        1598922000 + 12*60*60,
       ],
     },
   ];
-  */
+{% endcomment %}
 
   let embedTweetContainer = document.querySelector('#embed_tweet_container');
   twttr.ready(twttr => {
