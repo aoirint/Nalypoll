@@ -1,0 +1,8 @@
+django
+requests
+gunicorn
+mysqlclient
+python-dateutil
+requests-oauthlib
+schedule
+
