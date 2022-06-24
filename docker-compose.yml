@@ -5,10 +5,9 @@ services:
     command: bash -c "sleep 1s && python3 manage.py runserver 0.0.0.0:8000"
     # command: gunicorn -w 1 Nalypoll.wsgi -b 0.0.0.0:8000
     restart: always
-    ports:
-      - "127.0.0.1:8002:8000"
     volumes:
       - ./Nalypoll:/code
+      - static-data:/static
     env_file:
       - .env.django
     depends_on:
@@ -31,3 +30,16 @@ services:
       - ./db:/var/lib/mysql
     env_file:
       - .env.mysql
+  nginx:
+    image: nginx:1.23
+    restart: always
+    ports:
+      - "127.0.0.1:8002:80"
+    volumes:
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template
+      - static-data:/static
+    depends_on:
+      - app
+
+volumes:
+  static-data:

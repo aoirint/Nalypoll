@@ -154,8 +154,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-if DEBUG:
-    STATICFILES_DIRS = [ BASE_DIR / 'static', ]
-else:
-    # distribute with your web server
-    pass
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+if 'DJANGO_STATIC_ROOT' in os.environ:
+    STATIC_ROOT = os.environ['DJANGO_STATIC_ROOT']

@@ -2,6 +2,7 @@ FROM python:3.9
 
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_DEBUG=0
+ENV DJANGO_STATIC_ROOT=/static
 
 WORKDIR /code
 ADD requirements.txt /code/
