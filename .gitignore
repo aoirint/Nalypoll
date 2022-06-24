@@ -1,6 +1,5 @@
 __pycache__/
-/.env.mysql
-/.env.django
+/.env*
 /db
 db.sqlite3
 dump.json
