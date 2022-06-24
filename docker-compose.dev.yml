@@ -1,18 +1,23 @@
 version: '3'
 services:
   app:
-    image: aoirint/nalypoll:latest
+    build: .
+    command: bash -c "sleep 1s && python3 manage.py runserver 0.0.0.0:8000"
+    # command: gunicorn -w 1 Nalypoll.wsgi -b 0.0.0.0:8000
     restart: always
     volumes:
+      - ./Nalypoll:/code
       - static-data:/static
     env_file:
       - .env.django
     depends_on:
       - db
   updater:
-    image: aoirint/nalypoll:latest
+    build: .
     command: bash -c "sleep 1s && python3 tools/PollUpdater.py"
     restart: always
+    volumes:
+      - ./Nalypoll:/code
     env_file:
       - .env.django
     depends_on:
@@ -22,7 +27,7 @@ services:
     restart: always
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
-      - db-data:/var/lib/mysql
+      - ./db:/var/lib/mysql
     env_file:
       - .env.mysql
   nginx:
@@ -37,5 +42,4 @@ services:
       - app
 
 volumes:
-  db-data:
   static-data:
