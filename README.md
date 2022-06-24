@@ -1,5 +1,9 @@
 # nalypoll
 
+Twitterの投票経過をグラフ化するWebアプリ（Django） / Twitter App for visualizing poll histories.
+
+- <https://nalypoll.aoirint.com/>
+
 ## Prepare
 
 Copy `template.env`, `template.env.django`, `template.env.mysql` to `.env`, `.env.django`, `.env.mysql` and set values.
