@@ -27,3 +27,17 @@ docker-compose up -d
 docker-compose exec app python3 manage.py migrate
 docker-compose exec app python3 manage.py collectstatic
 ```
+
+## Add dependencies
+
+Add the dependencies to `requirements.in` and execute below.
+
+```shell
+sudo apt install -y libmysqlclient-dev
+
+# Python 3.9
+pip3 install -U pip-tools
+
+pip-compile
+```
+
