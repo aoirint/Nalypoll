@@ -35,7 +35,7 @@ Add the dependencies to `requirements.in` and execute below.
 ```shell
 sudo apt install -y libmysqlclient-dev
 
-# Python 3.9
+# Python 3.11
 pip3 install -U pip-tools
 
 pip-compile
