@@ -91,6 +91,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Nalypoll.context_processors.nalypoll_gtag',
             ],
         },
     },
@@ -166,3 +167,6 @@ STATICFILES_DIRS = [
 
 if 'DJANGO_STATIC_ROOT' in os.environ:
     STATIC_ROOT = os.environ['DJANGO_STATIC_ROOT']
+
+
+NALYPOLL_GTAG = os.environ.get('NALYPOLL_GTAG')
