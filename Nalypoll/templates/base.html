@@ -54,17 +54,17 @@
   crossorigin="anonymous"></script>
 <script src="{% static 'js/barchartrace.js' %}"></script>
 
-
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-157155944-4"></script>
+{% if NALYPOLL_GTAG %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ NALYPOLL_GTAG }}"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'UA-157155944-4');
+  gtag('config', '{{ NALYPOLL_GTAG }}');
 </script>
-
+{% endif %}
 
 <!-- https://developer.twitter.com/en/docs/twitter-for-websites/javascript-api/guides/set-up-twitter-for-websites -->
 <script>window.twttr = (function(d, s, id) {
