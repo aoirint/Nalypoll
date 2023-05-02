@@ -1,5 +1,7 @@
 # nalypoll
 
+**Twitter API有料化のため、[メンテナンスを終了しました](https://github.com/aoirint/nalypoll/issues/7)。**
+
 Twitterの投票経過をグラフ化するWebアプリ（Django） / Twitter App for visualizing poll histories.
 
 - <https://nalypoll.aoirint.com/>
